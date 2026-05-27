@@ -44,8 +44,7 @@ export default function Home() {
             <div className="text-xl font-bold text-gray-800 dark:text-gray-100">FortmontAPI</div>
             <nav className="hidden md:flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
               <a href="#" className="hover:underline">Home</a>
-              <a href="#registry" className="hover:underline">Registry</a>
-              <a href="#lxc" className="hover:underline">LXC</a>
+              
             </nav>
           </div>
           <div className="flex items-center space-x-3">
