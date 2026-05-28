@@ -27,7 +27,7 @@ export default auth(async (req) => {
   if (protectedApiPrefix.some((prefix) => path.startsWith(prefix))) {
     const apiKey = req.headers.get("x-api-key");
 
-    if (apiKey !== process.env.API_KEY) {
+    if (apiKey !== process.env.NEXT_PUBLIC_API_KEY) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

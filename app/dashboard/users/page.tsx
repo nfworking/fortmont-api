@@ -21,7 +21,7 @@ export default async function UsersPage() {
     >
       <AppSidebar variant="inset" user={user} />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader title="Site Users" />
         <UsersTable />
       </SidebarInset>
     </SidebarProvider>

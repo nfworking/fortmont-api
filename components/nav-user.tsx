@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { Button } from "./ui/button"
 import {
   Avatar,
@@ -82,12 +83,12 @@ export function NavUser({ user }: Props) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <CircleUserRoundIcon />
-                <a href="/profile" className=""/>
-                Profile
+              <DropdownMenuItem asChild>
+                <Link href="/profile">
+                  <CircleUserRoundIcon />
+                  <span>Profile</span>
+                </Link>
               </DropdownMenuItem>
-              
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
@@ -100,15 +101,14 @@ export function NavUser({ user }: Props) {
               </Button>
             </DropdownMenuItem>
             <DropdownMenuItem>
-
-                <Button
+              <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => window.location.href = "/dashboard/users"}
+                asChild
               >
-                Access Site Users
+                <Link href="/dashboard/users">Access Site Users</Link>
               </Button>
-              </DropdownMenuItem>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
