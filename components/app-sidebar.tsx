@@ -48,7 +48,22 @@ const data = {
         />
       ),
      },
-  
+     {
+      title: "Server Registry Info",
+      url: "/dashboard/server-registry",
+      icon: (
+        <DatabaseIcon
+        />
+      ),
+     },
+     {
+      title: "LXC Registry",
+      url: "/dashboard/lxc-registry",
+      icon: (
+        <ServerIcon
+        />
+      ),
+     }
     ],
 }
 

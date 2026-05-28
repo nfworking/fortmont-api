@@ -11,7 +11,7 @@ type LxcEntry = {
   created_at?: string | number | Date | null;
 };
 
-export function DashboardStatusPanel() {
+export function LxcRegistryTable() {
   const [lxcs, setLxcs] = useState<LxcEntry[]>([]);
 
   useEffect(() => {
@@ -42,31 +42,48 @@ export function DashboardStatusPanel() {
               FortmontAPI
             </p>
             <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
-              Registry and LXC overview
+              LXC registry overview
             </h1>
             <p className="max-w-2xl text-sm text-muted-foreground md:text-base">
-              Live status pulled from the container endpoint.
+              Live container state pulled from the LXC endpoint.
             </p>
           </div>
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+            {lxcs.length} entries
+          </span>
         </div>
       </section>
 
       <section className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-foreground">LXC info</h2>
-          <p className="text-sm text-muted-foreground">Container state and deployment context from the LXC endpoint.</p>
+          <p className="text-sm text-muted-foreground">
+            Container state and deployment context from the LXC endpoint.
+          </p>
         </div>
 
         <div className="overflow-hidden rounded-xl border border-border/60">
           <table className="min-w-full table-auto">
             <thead className="bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">IP</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Compose Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Created At</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Unique ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  IP
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Role
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Compose Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Created At
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Unique ID
+                </th>
               </tr>
             </thead>
             <tbody>

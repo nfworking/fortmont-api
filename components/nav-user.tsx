@@ -100,15 +100,7 @@ export function NavUser({ user }: Props) {
                 Logout
               </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Button
-                variant="outline"
-                className="w-full"
-                asChild
-              >
-                <Link href="/dashboard/users">Access Site Users</Link>
-              </Button>
-            </DropdownMenuItem>
+           
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
