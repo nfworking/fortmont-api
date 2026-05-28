@@ -1,17 +1,14 @@
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
+import { Hero115 } from "@/components/hero115";
+import { Feature17 } from "@/components/feature17";
+import { Pricing6 } from "@/components/pricing6";
 
 export default function Home() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-4">
-      <h1 className="text-2xl font-bold">Welcome to Fortmont</h1>
-      <p className="text-muted-foreground">
-        Please login to access the dashboard.
-      </p>
-      <Button asChild>
-        <Link href="/login">Go to Login</Link>
-      </Button>
+    <div className="flex flex-col items-center gap-6 pt-6 md:gap-10">
+      <Hero115 />
+      <Feature17 />
+      <Pricing6 />
+
     </div>
   )
 }
