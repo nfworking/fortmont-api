@@ -8,11 +8,25 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { signIn } from "next-auth/react";
+import { useState } from "react";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async () => {
+    try {
+      setIsLoading(true);
+      await signIn("microsoft-entra-id");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
@@ -55,10 +69,13 @@ export function LoginForm({
         <FieldSeparator>continue with</FieldSeparator>
         <Field>
          
-           <Button variant="outline" type="button">
+           <Button variant="outline" type="button"
+           onClick={handleLogin}
+           disabled={isLoading}
+           >
           
-       Login with EntraID
-          </Button>
+   {isLoading ? "Signing in..." : "Login with Entra ID"}
+          </Button >
           <FieldDescription className="text-center">
             Don&apos;t have an account?{" "}
             <a href="#" className="underline underline-offset-4">

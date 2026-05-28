@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
 
 type RegistryEntry = {
   id: string | number;
@@ -69,9 +70,7 @@ export function DashboardStatusPanel() {
               Live status pulled from the registry and container endpoints.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => (window.location.href = "/admin")}>
-            Admin Console
-          </Button>
+          
         </div>
       </section>
 

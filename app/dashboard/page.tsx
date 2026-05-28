@@ -1,11 +1,15 @@
 import type { CSSProperties } from "react";
+import { auth } from "@/lib/auth";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { DashboardStatusPanel } from "@/components/dashboard-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-export default function Page() {
+export default async function Page() {
+  const session = await auth();
+  const user = session?.user ?? null;
+
   return (
     <SidebarProvider
       style={
@@ -15,11 +19,11 @@ export default function Page() {
         } as CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" user={user} />
       <SidebarInset>
         <SiteHeader />
         <DashboardStatusPanel />
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

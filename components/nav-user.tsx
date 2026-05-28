@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+import { Button } from "./ui/button"
 import {
   Avatar,
   AvatarFallback,
@@ -21,17 +23,20 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { EllipsisVerticalIcon, CircleUserRoundIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { signOut } from "next-auth/react";
+import { hr } from "zod/v4/locales"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
+type Props = {
+  user?: {
+    name?: string | null
+    email?: string | null
+    avatar?: string | null
   }
-}) {
+}
+
+export function NavUser({ user }: Props) {
   const { isMobile } = useSidebar()
+  const effectiveUser = user ?? { name: "", email: "", avatar: "" }
 
   return (
     <SidebarMenu>
@@ -43,13 +48,13 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={effectiveUser.avatar ?? undefined} alt={effectiveUser.name ?? ""} />
+                <AvatarFallback className="rounded-lg">User</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+                <span className="truncate font-medium">{effectiveUser.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
+                  {effectiveUser.email}
                 </span>
               </div>
               <EllipsisVerticalIcon className="ml-auto size-4" />
@@ -64,13 +69,13 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={effectiveUser.avatar ?? undefined} alt={effectiveUser.name ?? ""} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate font-medium">{effectiveUser.name}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
+                    {effectiveUser.email}
                   </span>
                 </div>
               </div>
@@ -78,26 +83,21 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <CircleUserRoundIcon
-                />
-                Account
+                <CircleUserRoundIcon />
+                <a href="/profile" className=""/>
+                Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon
-                />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
-                Notifications
-              </DropdownMenuItem>
+              
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOutIcon
-              />
-              Log out
+              <Button
+                onClick={() => signOut()}
+                variant="outline"
+                className="w-full"
+              >
+                Logout
+              </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -105,3 +105,6 @@ export function NavUser({
     </SidebarMenu>
   )
 }
+
+// named export only
+// named export only
