@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
@@ -17,10 +18,41 @@ export function LoginForm({
 }: React.ComponentProps<"form">) {
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoading2, setIsLoading2] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     try {
       setIsLoading(true);
+      setError(null);
+
+      const result = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      if (result?.error) {
+        setError("Invalid username or password.");
+        return;
+      }
+
+      router.push(result?.url ?? "/dashboard");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEntraLogin = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
       await signIn("microsoft-entra-id");
     } finally {
       setIsLoading(false);
@@ -28,22 +60,26 @@ export function LoginForm({
   };
 
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleLogin} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
           <p className="text-sm text-balance text-muted-foreground">
-            Enter your email below to login to your account
+            Enter your username below to login to your account
           </p>
         </div>
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor="username">Username</FieldLabel>
           <Input
-            id="email"
-            type="email"
-            placeholder="m@example.com"
+            id="username"
+            name="username"
+            type="text"
+            placeholder="your.username"
             required
             className="bg-background"
+            autoComplete="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
           />
         </Field>
         <Field>
@@ -58,23 +94,30 @@ export function LoginForm({
           </div>
           <Input
             id="password"
+            name="password"
             type="password"
             required
             className="bg-background"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
           />
         </Field>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <Field>
-          <Button type="submit">Login</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Signing in..." : "Login"}
+          </Button>
         </Field>
         <FieldSeparator>continue with</FieldSeparator>
         <Field>
          
            <Button variant="outline" type="button"
-           onClick={handleLogin}
-           disabled={isLoading}
+           onClick={handleEntraLogin}
+           disabled={isLoading2}
            >
           
-   {isLoading ? "Signing in..." : "Login with Entra ID"}
+   {isLoading2 ? "Signing in..." : "Login with Entra ID"}
           </Button >
           <FieldDescription className="text-center">
             Don&apos;t have an account?{" "}

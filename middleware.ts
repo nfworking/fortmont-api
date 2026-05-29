@@ -1,5 +1,5 @@
-import { auth } from "./lib/auth";
-import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
 const protectedRoutes = ["/dashboard", "/profile"];
 const authPageRoutes = ["/login"];
@@ -7,12 +7,13 @@ const authPageRoutes = ["/login"];
 const apiAuthPrefix = "/api/auth";
 const protectedApiPrefix = ["/api/lxc", "/api/apiUsers"];
 
-export default auth(async (req) => {
+export default async function middleware(req: NextRequest) {
   const { nextUrl } = req;
 
   const path = nextUrl.pathname;
 
-  const isLoggedIn = !!req.auth;
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const isLoggedIn = !!token;
 
   /*
    * Ignore NextAuth API routes
@@ -61,7 +62,7 @@ export default auth(async (req) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [

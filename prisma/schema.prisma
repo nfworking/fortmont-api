@@ -38,3 +38,14 @@ model apiUsers {
   role String?
   personalEmail String
 }
+
+model AppUsers {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  displayName  String?
+  email        String?  @unique
+  passwordHash String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
