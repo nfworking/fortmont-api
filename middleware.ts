@@ -5,7 +5,7 @@ const protectedRoutes = ["/dashboard", "/profile"];
 const authPageRoutes = ["/login"];
 
 const apiAuthPrefix = "/api/auth";
-const protectedApiPrefix = ["/api/lxc", "/api/apiUsers"];
+const protectedApiPrefix = ["/api/lxc", "/api/apiUsers", "/api/users"];
 
 export default async function middleware(req: NextRequest) {
   const { nextUrl } = req;
