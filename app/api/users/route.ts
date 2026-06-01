@@ -11,6 +11,7 @@ function sanitizeAppUser(user: {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  phone: string | null;
 }) {
   return user;
 }
@@ -36,6 +37,7 @@ export async function GET(req: Request) {
       createdAt: true,
       updatedAt: true,
       isEntraUser: true,
+      phone: true,
     },
   });
 

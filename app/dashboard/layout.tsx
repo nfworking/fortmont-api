@@ -1,5 +1,6 @@
 import { ApplicationShell1 } from "@/components/application-shell1";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardLayout({
   children,
@@ -7,6 +8,50 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  const sessionUser = session?.user as
+    | {
+        id?: string | null;
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
+      }
+    | undefined;
 
-  return <ApplicationShell1 user={session?.user ?? null}>{children}</ApplicationShell1>;
+  const userId = sessionUser?.id?.trim() ?? undefined;
+  const email = session?.user?.email?.trim().toLowerCase();
+  const username = session?.user?.name?.trim().toLowerCase();
+
+  const user =
+    userId || email || username
+      ? await prisma.appUsers.findFirst({
+          where: {
+            OR: [
+              ...(userId ? [{ id: userId }] : []),
+              ...(email ? [{ email }] : []),
+              ...(username ? [{ username }] : []),
+            ],
+          },
+          select: {
+            displayName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        })
+      : null;
+
+  return (
+    <ApplicationShell1
+      user={
+        user
+          ? {
+              name: user.displayName ?? session?.user?.name ?? null,
+              email: user.email ?? session?.user?.email ?? null,
+              avatar: user.avatarUrl ?? sessionUser?.image ?? null,
+            }
+          : session?.user ?? null
+      }
+    >
+      {children}
+    </ApplicationShell1>
+  );
 }

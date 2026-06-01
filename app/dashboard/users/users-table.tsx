@@ -12,6 +12,7 @@ type ApiUserEntry = {
   avatarUrl?: string | null;
   isActive: boolean;
   isEntraUser: boolean;
+  phone: string | null;
 
 };
 
@@ -92,6 +93,9 @@ export function UsersTable() {
                   Email
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Phone Number
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Role
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -103,12 +107,13 @@ export function UsersTable() {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Entra User
                 </th>
+
               </tr>
             </thead>
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-sm text-muted-foreground" colSpan={6}>
+                  <td className="px-4 py-6 text-sm text-muted-foreground" colSpan={8}>
                     No users found.
                   </td>
                 </tr>
@@ -134,10 +139,12 @@ export function UsersTable() {
                     </td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.username}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.email ?? "-"}</td>
+                    <td className="px-4 py-3 text-sm text-foreground">{user.phone ?? "-"}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.role ?? "-"}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.isActive ? "Yes" : "No"}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.id}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.isEntraUser ? "Yes" : "No"}</td>
+                    
                      
           
                   </tr>

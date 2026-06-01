@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { CommandIcon, DatabaseIcon, LayoutDashboardIcon, ServerIcon, UsersIcon } from "lucide-react"
+import { CommandIcon, DatabaseIcon, GlobeLock, LayoutDashboardIcon, NetworkIcon, ServerIcon, UsersIcon } from "lucide-react"
 
 const data = {
   user: {
@@ -68,7 +68,15 @@ const data = {
       title: "DNS Records",
       url: "/dashboard/dns",
       icon: (
-        <ServerIcon
+        <GlobeLock
+        />
+      ),
+     },
+     {
+      title: "Proxy",
+      url: "/dashboard/proxy",
+      icon: (
+        <NetworkIcon
         />
       ),
      }

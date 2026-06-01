@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+
+import { ThemeToggle } from "@/components/theme-toggle"
 
 type SiteHeaderProps = {
   title?: string
@@ -16,6 +17,9 @@ export function SiteHeader({ title = "LXC and registry information" }: SiteHeade
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <h1 className="text-base font-medium">{title}</h1>
+        <div className="ml-auto flex items-center gap-2">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )

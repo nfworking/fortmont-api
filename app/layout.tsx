@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, The_Girl_Next_Door } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/sonner";
 import { auth } from "../lib/auth";
-import { SessionProvider } from "next-auth/react";
+import { Providers } from "@/components/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,22 +26,15 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <SessionProvider session={session}>
     <html
       lang="en"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-         <TooltipProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Toaster richColors closeButton />
-           {children}
-        </ThemeProvider>
-        </TooltipProvider>
-       </body>
-     </html>
-     </SessionProvider>
+        <Providers session={session}>{children}</Providers>
+      </body>
+    </html>
   );
 }
 
