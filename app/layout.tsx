@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, The_Girl_Next_Door } from "next/font/google";
 import "./globals.css";
-import { auth } from "../lib/auth";
 import { Providers } from "@/components/providers";
 
 const geistSans = Geist({
@@ -24,7 +23,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
   return (
     <html
       lang="en"
@@ -32,7 +30,7 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Providers session={session}>{children}</Providers>
+        <Providers session={null}>{children}</Providers>
       </body>
     </html>
   );

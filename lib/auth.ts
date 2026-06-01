@@ -184,11 +184,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.name = token.name ?? session.user.name;
-        session.user.email = token.email ?? session.user.email;
-        session.user.image = token.avatarUrl ?? session.user.image;
-
-        (session.user as typeof session.user & {
+        const enrichedUser = session.user as typeof session.user & {
           id?: string;
           username?: string;
           role?: string | null;
@@ -196,67 +192,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           avatarUrl?: string | null;
           isActive?: boolean;
           isEntraUser?: boolean | null;
-        }).id = token.sub;
+        };
 
-        (session.user as typeof session.user & {
-          id?: string;
-          username?: string;
-          role?: string | null;
-          phone?: string | null;
-          avatarUrl?: string | null;
-          isActive?: boolean;
-          isEntraUser?: boolean | null;
-        }).username = typeof token.username === "string" ? token.username : undefined;
+        if (typeof token.name === "string") {
+          session.user.name = token.name;
+        }
 
-        (session.user as typeof session.user & {
-          id?: string;
-          username?: string;
-          role?: string | null;
-          phone?: string | null;
-          avatarUrl?: string | null;
-          isActive?: boolean;
-          isEntraUser?: boolean | null;
-        }).role = typeof token.role === "string" ? token.role : null;
+        if (typeof token.email === "string") {
+          session.user.email = token.email;
+        }
 
-        (session.user as typeof session.user & {
-          id?: string;
-          username?: string;
-          role?: string | null;
-          phone?: string | null;
-          avatarUrl?: string | null;
-          isActive?: boolean;
-          isEntraUser?: boolean | null;
-        }).phone = typeof token.phone === "string" ? token.phone : null;
+        if (typeof token.avatarUrl === "string") {
+          session.user.image = token.avatarUrl;
+          enrichedUser.avatarUrl = token.avatarUrl;
+        }
 
-        (session.user as typeof session.user & {
-          id?: string;
-          username?: string;
-          role?: string | null;
-          phone?: string | null;
-          avatarUrl?: string | null;
-          isActive?: boolean;
-          isEntraUser?: boolean | null;
-        }).avatarUrl = typeof token.avatarUrl === "string" ? token.avatarUrl : null;
+        if (typeof token.sub === "string") {
+          enrichedUser.id = token.sub;
+        }
 
-        (session.user as typeof session.user & {
-          id?: string;
-          username?: string;
-          role?: string | null;
-          phone?: string | null;
-          avatarUrl?: string | null;
-          isActive?: boolean;
-          isEntraUser?: boolean | null;
-        }).isActive = typeof token.isActive === "boolean" ? token.isActive : true;
+        if (typeof token.username === "string") {
+          enrichedUser.username = token.username;
+        }
 
-        (session.user as typeof session.user & {
-          id?: string;
-          username?: string;
-          role?: string | null;
-          phone?: string | null;
-          avatarUrl?: string | null;
-          isActive?: boolean;
-          isEntraUser?: boolean | null;
-        }).isEntraUser = typeof token.isEntraUser === "boolean" ? token.isEntraUser : null;
+        if (typeof token.role === "string") {
+          enrichedUser.role = token.role;
+        }
+
+        if (typeof token.phone === "string") {
+          enrichedUser.phone = token.phone;
+        }
+
+        if (typeof token.isActive === "boolean") {
+          enrichedUser.isActive = token.isActive;
+        }
+
+        if (typeof token.isEntraUser === "boolean") {
+          enrichedUser.isEntraUser = token.isEntraUser;
+        }
       }
 
       return session;

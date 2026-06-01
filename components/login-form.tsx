@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -51,11 +53,11 @@ export function LoginForm({
 
   const handleEntraLogin = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading2(true);
       setError(null);
-      await signIn("microsoft-entra-id");
+      await signIn("microsoft-entra-id", { callbackUrl: "/dashboard" });
     } finally {
-      setIsLoading(false);
+      setIsLoading2(false);
     }
   };
 
