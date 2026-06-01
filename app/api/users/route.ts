@@ -80,6 +80,7 @@ export async function POST(req: Request) {
       username,
       displayName,
       email,
+      phone: typeof body.phone === "string" && body.phone.trim() ? body.phone.trim() : null,
       passwordHash: hashPassword(password),
     },
     select: {
@@ -87,6 +88,7 @@ export async function POST(req: Request) {
       username: true,
       displayName: true,
       email: true,
+      phone: true,
       isActive: true,
       createdAt: true,
       updatedAt: true,
