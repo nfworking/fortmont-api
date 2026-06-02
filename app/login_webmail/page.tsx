@@ -1,7 +1,7 @@
 "use client"
 
-import { LoginForm } from "@/components/login-form"
-import { Globe } from "lucide-react"
+import { LoginForm } from "@/components/webmail_login"
+import { GalleryVerticalEndIcon, Mail } from "lucide-react"
 
 export default function LoginPage() {
   return (
@@ -10,9 +10,9 @@ export default function LoginPage() {
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Globe className="size-4" />
+              <Mail className="size-4" />
             </div>
-            Fortmont Web
+            Fortmont Webmail
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">

@@ -70,7 +70,7 @@ export function LoginForm({
     <form className={cn("flex flex-col gap-6", className)} onSubmit={handleLogin} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Login to your account</h1>
+          <h1 className="text-2xl font-bold">Login to your webmail account</h1>
           <p className="text-sm text-balance text-muted-foreground">
             Enter your username below to login to your account
           </p>
@@ -127,16 +127,11 @@ export function LoginForm({
    {isLoading2 ? "Signing in..." : "Login with Entra ID"}<ArrowUpRight/>
           </Button >
             <Button variant="outline" type="button"
-           onClick={() => (window.location.href = "/mail")}
+           onClick={() => (window.location.href = "/dashboard")}
            >
-          Access Fortmont Webmail<ArrowUpRight/>
+          Access Fortmont <ArrowUpRight/>
           </Button >
-          <FieldDescription className="text-center">
-            Don&apos;t have an account?{" "}
-            <a href="/signup" className="underline underline-offset-4">
-              Signup
-            </a>
-          </FieldDescription>
+          
         </Field>
       </FieldGroup>
     </form>

@@ -52,4 +52,26 @@ model AppUsers {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+
+  mailboxes    UserMailbox[]
+}
+
+model UserMailbox {
+  id                String   @id @default(uuid())
+
+  userId            String
+  email             String   // mailbox address (can differ from AppUsers.email)
+
+  encryptedPassword String
+
+  isPrimary         Boolean  @default(true)
+  provider          String?  // "mailcow", "external", etc.
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              AppUsers @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
 }
