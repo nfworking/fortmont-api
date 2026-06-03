@@ -1,49 +1,165 @@
-### API routes implemented
-  #### API routes are API_KEY protected, make sure to send x-api-key in header to use the API
 
-- `/api/xc`
-  - #### HTTP POST Requirements for creating/registering lxc's
-    ````json
-     {
-        "lxc_ip": "10.0.0.1",
-        "lxc_role": "mysql",
-        "lxc_status": "disabled",
-        "lxc_compose_status": "pending"
-      }
-       ```
-    ````
-  - #### HTTP GET endpoint
+# API Routes Reference Documentation Template
 
-    `/api/lxc`
-    - Optional params include lxc_ip, lxc_role, lxc_status, lxc_compose_status to filter by certain params
+This document serves as a template and reference for the application's API endpoints. Each route listed below contains a structured outline for HTTP methods, request payloads, and expected behaviors. Customize the JSON payloads, descriptions, and methods as needed for your specific implementation. For a more in depth information about fields such as users and mailbox, please see [Database Schema](./schema.md)
 
-  - #### HTTP PATCH requrements
-    - **Required** (params => lxc_unique_id) -> which ID you want to update, unique to the lxc and the role
-    - **Required fields to update before updating files** (body => lxc_status **OR** lxc_compose_status) -> **Update** to maintance before editing any related files
-    - **PATCH Json requirements** All fields are optional, dont need to include all->
-      ```json
-      {
-        "lxc_ip": "10.0.0.1",
-        "lxc_role": "mysql",
-        "lxc_status": "disabled",
-        "lxc_compose_status": "pending"
-      }
-      ```
--  ``` /api/registry```
 
-### Auth profile updates
+---
 
-- `PATCH /api/auth`
-  - Requires `Authorization: Bearer <token>` from the login endpoint.
-  - Updates the signed-in user by default.
-  - Admins can update another user by passing `?id=<userId>`.
-  - Supported fields in the JSON body:
-    ```json
+## 🔐 Authentication Routes (`/api/auth/*`)
+
+### 🔹 `/api/auth/entra-login`
+- Used for Fortmont Mobile Authentication
+
+
+---
+
+### 🔹 `/api/auth/login`
+
+* Used for Application Authentication (Only accepts POST requests from clients to update user information)
+
+```
+{
+  "User_field":""
+}
+
+```
+
+
+---
+
+### 🔹 `/api/auth`
+
+* Used for Application Authentication (Do not modify).
+---
+
+## 🌐 Network & Infrastructure Routes
+
+### 🔹 `/api/dns`
+
+* **HTTP POST Requirements**
+```json
+{
+  "zone": "",
+  "domain": "",
+  "type": "",
+  "ttl": 3600,
+  "ipAddress": ""
+}
+
+```
+
+
+* **HTTP GET**
+* *Description*: List all dns records.
+---
+
+### 🔹 `/api/proxy`
+
+* **HTTP GET**
+* *Description*: Fetch active reverse proxy routing rules.
+---
+
+## 📬 Mailbox Management Routes
+
+### 🔹 `/api/mailbox/create`
+
+* **HTTP POST Requirements**
+* It will retrive the current users authentication **Cookie** for authentication and creating link between mailbox db and server.
+
+```json
+{
+    "email": "",
+    "password": ""
+}
+
+```
+---
+
+### 🔹 `/api/mailbox`
+
+* **HTTP GET**
+* *Description*: Retrieve a list of all managed mailboxes.
+---
+
+## 🖥️ Proxmox Virtualization Routes
+
+### 🔹 `/api/proxmox/hosts`
+
+* **HTTP GET**
+* *Description*: List clustered Proxmox hypervisor nodes and their hardware resource summaries.
+
+
+
+---
+
+### 🔹 `/api/proxmox/lxc`
+
+
+* **HTTP GET**
+* *Description*: List all LXC containers or query specific cluster details.
+
+
+
+---
+
+### 🔹 `/api/proxmox/resources`
+
+* **HTTP GET**
+* *Description*: Retrieve cluster-wide resource metrics including CPU, RAM, and Storage allocations.
+
+
+
+---
+
+## ⚙️ Core System & User Routes
+
+### 🔹 `/api/realtime`
+
+* **HTTP GET / WebSocket Upgrade**
+* *Description*: Endpoint for realtime information for the Fortmont Mobile Application.
+
+
+
+---
+
+### 🔹 `/api/registry`
+
+* **HTTP POST Requirements**
+```json
+
     {
-      "displayName": "Ada Lovelace",
-      "email": "ada@example.com",
-      "role": "admin",
-      "phone": "+1-555-0100",
-      "avatarUrl": "https://example.com/avatar.png"
+        "name": "",
+        "version": "",
+        "hosted_on": "",
+        "server_url": ""
     }
-    ```
+
+```
+
+
+* **HTTP GET**
+* *Description*: List registered API servers.
+
+
+
+---
+
+### 🔹 `/api/users`
+
+* **HTTP POST Requirements**
+* **REQUIRES** API token to be sent as a **x-api-key** header
+```json
+{
+  "username": "",
+  "displayName": "",
+  "email": "",
+  "phone":"",
+  "password":""
+}
+
+```
+
+
+* **HTTP GET**
+* *Description*: Query the system users.
