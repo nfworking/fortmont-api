@@ -15,9 +15,11 @@ type AccountSettingsFormProps = {
     phone: string | null;
     avatarUrl: string | null;
   };
+  hasMailbox?: boolean;
+
 };
 
-export function AccountSettingsForm({ user }: AccountSettingsFormProps) {
+export function AccountSettingsForm({ user, hasMailbox = false }: AccountSettingsFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
@@ -94,10 +96,20 @@ export function AccountSettingsForm({ user }: AccountSettingsFormProps) {
           <p>Clearing a field and saving will remove that value.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Saving..." : "Save changes"}
-          </Button>
-        </div>
+  <Button type="submit" disabled={isPending}>
+    {isPending ? "Saving..." : "Save changes"}
+  </Button>
+
+  {!hasMailbox && (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => router.push("/onboard/mailbox")}
+    >
+      Link mailbox
+    </Button>
+  )}
+</div>
       </div>
 
       {message ? <p className="text-sm text-emerald-600 dark:text-emerald-400">{message}</p> : null}

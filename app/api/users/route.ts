@@ -22,24 +22,32 @@ export async function GET(req: Request) {
   const username = searchParams.get("username")?.trim().toLowerCase();
   const email = searchParams.get("email") ?? undefined;
 
-  const users = await prisma.appUsers.findMany({
-    where: {
-      id,
-      username,
-      email,
+ const users = await prisma.appUsers.findMany({
+  where: {
+    id,
+    username,
+    email,
+  },
+  select: {
+    id: true,
+    username: true,
+    displayName: true,
+    email: true,
+    isActive: true,
+    createdAt: true,
+    updatedAt: true,
+    isEntraUser: true,
+    phone: true,
+
+    mailboxes: {
+      select: {
+        id: true,
+        email: true,
+        isPrimary: true,
+      },
     },
-    select: {
-      id: true,
-      username: true,
-      displayName: true,
-      email: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
-      isEntraUser: true,
-      phone: true,
-    },
-  });
+  },
+});
 
   return Response.json(users.map(sanitizeAppUser));
 }

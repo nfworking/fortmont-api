@@ -47,6 +47,7 @@ export default async function AccountPage() {
   const userId = sessionUser.id?.trim();
   const email = sessionUser.email?.trim().toLowerCase();
   const username = sessionUser.name?.trim().toLowerCase();
+  
 
   const user = await prisma.appUsers.findFirst({
     where: {
@@ -68,12 +69,21 @@ export default async function AccountPage() {
       isActive: true,
       createdAt: true,
       updatedAt: true,
+      mailboxes: {
+      select: {
+      id: true,
+      email: true,
+      isPrimary: true,
+      provider: true,
+    },
+  },
     },
   });
 
   const accountType = user?.isEntraUser ? "Microsoft Entra" : "Local account";
   const roleLabel = user?.role ?? "No role set";
   const initials = getInitials(user?.displayName ?? user?.username ?? user?.email ?? sessionUser.name);
+  const hasMailbox = (user?.mailboxes?.length ?? 0) > 0;
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
@@ -134,6 +144,8 @@ export default async function AccountPage() {
                   phone: user.phone,
                   avatarUrl: user.avatarUrl,
                 }}
+                  hasMailbox={(user?.mailboxes?.length ?? 0) > 0}
+
               />
             ) : (
               <div className="space-y-3 text-sm text-muted-foreground">
@@ -155,30 +167,71 @@ export default async function AccountPage() {
               <CardDescription>Read-only identity and lifecycle data from Prisma.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              {user ? (
-                <>
-                  <DetailRow label="User ID" value={user.id} />
-                  <DetailRow label="Username" value={user.username} />
-                </>
-              ) : (
-                <DetailRow label="Account link" value="No database match yet" />
-              )}
-              <Separator />
-              <DetailRow label="Display name" value={user?.displayName ?? sessionUser.name ?? "Not set"} />
-              <DetailRow label="Email" value={user?.email ?? sessionUser.email ?? "Not set"} />
-              <DetailRow label="Phone" value={user?.phone ?? "Not set"} />
-              <DetailRow label="Avatar URL" value={user?.avatarUrl ?? "Not set"} />
-              <DetailRow label="Role" value={user?.role ?? "Not set"} />
-              <DetailRow label="Entra user" value={user?.isEntraUser ? "Yes" : "No"} />
-              <DetailRow label="Status" value={user?.isActive ? "Active" : "Pending"} />
-              <Separator />
-              {user ? (
-                <>
-                  <DetailRow label="Created" value={formatDate(user.createdAt)} />
-                  <DetailRow label="Updated" value={formatDate(user.updatedAt)} />
-                </>
-              ) : null}
-            </CardContent>
+  {user ? (
+    <>
+      <DetailRow label="User ID" value={user.id} />
+      <DetailRow label="Username" value={user.username} />
+    </>
+  ) : (
+    <DetailRow label="Account link" value="No database match yet" />
+  )}
+
+  <Separator />
+
+  <DetailRow
+    label="Display name"
+    value={user?.displayName ?? sessionUser.name ?? "Not set"}
+  />
+  <DetailRow
+    label="Email"
+    value={user?.email ?? sessionUser.email ?? "Not set"}
+  />
+  <DetailRow
+    label="Phone"
+    value={user?.phone ?? "Not set"}
+  />
+  <Separator />
+  <DetailRow 
+    label="Mailbox ID"
+    value={user?.mailboxes?.[0]?.id ?? "No mailbox provisioned"}
+  />
+<DetailRow
+    label="Mailbox Email"
+    value={user?.mailboxes?.[0]?.email ?? "No mailbox provisioned"}
+  />
+<Separator />
+  <DetailRow
+    label="Avatar URL"
+    value={user?.avatarUrl ?? "Not set"}
+  />
+  <DetailRow
+    label="Role"
+    value={user?.role ?? "Not set"}
+  />
+  <DetailRow
+    label="Entra user"
+    value={user?.isEntraUser ? "Yes" : "No"}
+  />
+  <DetailRow
+    label="Status"
+    value={user?.isActive ? "Active" : "Pending"}
+  />
+
+  <Separator />
+
+  {user ? (
+    <>
+      <DetailRow
+        label="Created"
+        value={formatDate(user.createdAt)}
+      />
+      <DetailRow
+        label="Updated"
+        value={formatDate(user.updatedAt)}
+      />
+    </>
+  ) : null}
+</CardContent>
           </Card>
 
           <Card>

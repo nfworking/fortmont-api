@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, The_Girl_Next_Door } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 
-
+export const metadata: Metadata = {
+  title: "Fortmont Webmail Creation",
+};
 
 export default async function RootLayout({
   children,
@@ -28,7 +31,9 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Providers session={null}>{children}</Providers>
+        <Providers session={null}>{children}
+          <Toaster richColors position="top-right" />
+        </Providers>
       </body>
     </html>
   );
