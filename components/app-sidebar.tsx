@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { CommandIcon, DatabaseIcon, GlobeLock, LayoutDashboardIcon, NetworkIcon, ServerIcon, UsersIcon } from "lucide-react"
+import { CommandIcon, DatabaseIcon, GlobeLock, LayoutDashboardIcon, MailIcon, NetworkIcon, ServerIcon, UsersIcon } from "lucide-react"
 
 const data = {
   user: {
@@ -78,6 +78,13 @@ const data = {
       icon: (
         <NetworkIcon
         />
+      ),
+     },
+     {
+      title: "Webmail",
+      url: "/mail",
+      icon: (
+        <MailIcon />
       ),
      }
     ],

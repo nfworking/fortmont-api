@@ -62,6 +62,7 @@ model UserMailbox {
 
   userId            String
   email             String   // mailbox address (can differ from AppUsers.email)
+  
 
   encryptedPassword String
 
