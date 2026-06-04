@@ -467,9 +467,12 @@ export default function MailClient() {
                       </div>
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-52 bg-card border-border text-foreground/90" side="top" align="start">
-                    <DropdownMenuLabel className="text-muted-foreground text-xs">
+                  <DropdownMenuContent className="w-52 bg-card border-border text-foreground/90 " side="top" align="start">
+                    <DropdownMenuLabel className="text-muted-foreground text-xs hover:bg-muted/50 rounded-sm">
                       <button onClick={() => (window.location.href = "/dashboard/account")}>My Account</button>
+                    </DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-muted-foreground text-xs hover:bg-muted/50 rounded-sm">
+                      <button onClick={() => (window.location.href = "/dashboard")}>Dashboard</button>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-muted" />
                     <DropdownMenuItem onClick={() => signOut()} className="text-foreground/80 hover:text-foreground focus:bg-muted">
