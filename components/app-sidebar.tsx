@@ -87,6 +87,14 @@ const data = {
         <GlobeLock />
       )
     },
+       {
+      title: "EntraID",
+      url: "/dashboard/entra",
+      icon: (
+        <UsersIcon />
+      )
+     },
+
     {
       title: "Webmail",
       url: "/mail",
@@ -94,7 +102,7 @@ const data = {
         <MailIcon />
       ),
      },
-
+  
     ],
 }
 

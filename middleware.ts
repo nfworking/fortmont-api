@@ -7,7 +7,7 @@ const { auth } = NextAuth(authConfig);
 const protectedRoutes = ["/dashboard", "/profile"];
 const authPageRoutes = ["/login"];
 const apiAuthPrefix = "/api/auth";
-const protectedApiPrefix = ["/api/lxc", "/api/users"];
+const protectedApiPrefix = ["/api/lxc", "/api/users", "/api/entra"];
 
 export default auth(function middleware(req) {
   const path = req.nextUrl.pathname;
