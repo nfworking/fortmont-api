@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { CommandIcon, DatabaseIcon, GlobeLock, LayoutDashboardIcon, MailIcon, NetworkIcon, ServerIcon, UsersIcon } from "lucide-react"
+import { CloudIcon, CommandIcon, DatabaseIcon, GlobeLock, LayoutDashboardIcon, MailIcon, NetworkIcon, ServerIcon, UsersIcon } from "lucide-react"
 
 const data = {
   user: {
@@ -88,10 +88,10 @@ const data = {
       )
     },
        {
-      title: "EntraID",
+      title: "Azure",
       url: "/dashboard/entra",
       icon: (
-        <UsersIcon />
+        <CloudIcon /> 
       )
      },
 
