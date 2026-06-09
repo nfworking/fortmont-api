@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt } from "@/lib/mailboxPassword";
 import { ImapFlow } from "imapflow";
+import nodemailer from "nodemailer"
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -94,6 +95,30 @@ export async function POST(req: Request) {
       encryptedPassword: encrypt(password),
     },
   });
+
+  const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST!, 
+        port: 465, 
+        secure: true, 
+        auth: {
+          user: process.env.SYSTEM_SMTP_USER!,
+          pass: process.env.SYSTEM_SMTP_PASS!,
+        },
+      });
+
+  const senderHeader = `"Fortmont Identity Services" <${process.env.SYSTEM_SMTP_USER!}>`;
+
+    // 5. Send the email via SMTP
+  const info = await transporter.sendMail({
+      from: senderHeader,
+      to: mailbox.email,
+      subject: "Welcome to Fortmont!",
+      text: `You mailbox has been successfully created for your Fortmont account, ${mailbox.email}!`
+      
+    });
+
+  // Send invitation email
+  
 
   return NextResponse.json({
     success: true,
