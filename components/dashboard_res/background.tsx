@@ -17,7 +17,7 @@ export function DashboardBackground() {
         wireframe={false}
         shader="defaults"
         uTime={0}
-        uSpeed={0.3}
+        uSpeed={0.2}
         uStrength={0.3}
         uDensity={0.8}
         uFrequency={5.5}
@@ -28,9 +28,9 @@ export function DashboardBackground() {
         rotationX={0}
         rotationY={130}
         rotationZ={70}
-        color1="#73bfc4"
+        color1="#00eeff"
         color2="#ff810a"
-        color3="#8da0ce"
+        color3="#004cff"
         reflection={0.4}
         cAzimuthAngle={270}
         cPolarAngle={180}

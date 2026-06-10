@@ -1,9 +1,9 @@
-import { ApplicationShell1 } from "@/components/application-shell1";
+import  DashboardPage  from "@/components/application-shell2";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardBackground } from "@/components/dashboard_res/background";
 
-export default async function DashboardLayout({
+export default async function AppsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -43,22 +43,16 @@ export default async function DashboardLayout({
   return (
     <div className="relative min-h-screen w-full">
       {/* Fixed background layer */}
-     
+      <div className="fixed inset-0 -z-10">
+        <DashboardBackground />
+      </div>
 
       {/* App shell sits on top */}
-      <ApplicationShell1
-        user={
-          user
-            ? {
-                name: user.displayName ?? session?.user?.name ?? null,
-                email: user.email ?? session?.user?.email ?? null,
-                avatar: user.avatarUrl ?? sessionUser?.image ?? null,
-              }
-            : session?.user ?? null
-        }
+      <DashboardPage
+        
       >
         {children}
-      </ApplicationShell1>
+      </DashboardPage>
     </div>
   );
 }
