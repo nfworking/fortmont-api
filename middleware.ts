@@ -4,7 +4,7 @@ import { authConfig } from "@/lib/auth.config";
 
 const { auth } = NextAuth(authConfig);
 
-const publicRoutes = ["/login", "/login_webmail"];
+const publicRoutes = ["/login", "/login_webmail", "/signup"];
 const apiAuthPrefix = "/api/auth";
 
 export default auth((req) => {
@@ -12,16 +12,24 @@ export default auth((req) => {
 
   const isLoggedIn = !!req.auth;
 
+ const onboarded = (req.auth?.user as {
+  isOnboarded?: boolean;
+})?.isOnboarded;
+
   const isPublicRoute = publicRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + "/")
   );
+
+  const isOnboardingRoute =
+    pathname === "/onboard/user" ||
+    pathname.startsWith("/onboard/");
 
   // Allow NextAuth internal routes
   if (pathname.startsWith(apiAuthPrefix)) {
     return NextResponse.next();
   }
 
-  // ❌ HARD BLOCK: all API routes require auth
+  // API auth enforcement
   if (pathname.startsWith("/api")) {
     if (!isLoggedIn) {
       return new NextResponse(
@@ -32,22 +40,46 @@ export default auth((req) => {
         }
       );
     }
+
     return NextResponse.next();
   }
 
-  // ❌ HARD BLOCK: protected pages
+  // Require login
   if (!isPublicRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // 🚫 prevent logged-in users from login page
+  // Force onboarding
+  if (
+    isLoggedIn &&
+    onboarded === false &&
+    !isOnboardingRoute
+  ) {
+    return NextResponse.redirect(
+      new URL("/onboard/user", req.url)
+    );
+  }
+
+  // Prevent onboarded users from revisiting onboarding
+  if (
+    isLoggedIn &&
+    onboarded === true &&
+    isOnboardingRoute
+  ) {
+    return NextResponse.redirect(
+      new URL("/dashboard", req.url)
+    );
+  }
+
+  // Prevent logged-in users from login pages
   if (isPublicRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(
+      new URL("/dashboard", req.url)
+    );
   }
 
   return NextResponse.next();
 });
-
 export const config = {
   matcher: [
     "/((?!api|_next/static|_next/image|favicon.ico).*)",

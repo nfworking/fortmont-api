@@ -1,6 +1,7 @@
 import { ApplicationShell1 } from "@/components/application-shell1";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { DashboardBackground } from "@/components/dashboard_res/background";
 
 export default async function DashboardLayout({
   children,
@@ -40,18 +41,26 @@ export default async function DashboardLayout({
       : null;
 
   return (
-    <ApplicationShell1
-      user={
-        user
-          ? {
-              name: user.displayName ?? session?.user?.name ?? null,
-              email: user.email ?? session?.user?.email ?? null,
-              avatar: user.avatarUrl ?? sessionUser?.image ?? null,
-            }
-          : session?.user ?? null
-      }
-    >
-      {children}
-    </ApplicationShell1>
+    <div className="relative min-h-screen w-full">
+      {/* Fixed background layer */}
+      <div className="fixed inset-0 -z-10">
+        <DashboardBackground />
+      </div>
+
+      {/* App shell sits on top */}
+      <ApplicationShell1
+        user={
+          user
+            ? {
+                name: user.displayName ?? session?.user?.name ?? null,
+                email: user.email ?? session?.user?.email ?? null,
+                avatar: user.avatarUrl ?? sessionUser?.image ?? null,
+              }
+            : session?.user ?? null
+        }
+      >
+        {children}
+      </ApplicationShell1>
+    </div>
   );
 }

@@ -228,6 +228,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.avatarUrl = syncedUser.avatarUrl;
           token.isActive = syncedUser.isActive;
           token.isEntraUser = syncedUser.isEntraUser;
+          token.isOnboarded = syncedUser.onboarded;
 
           log(`Entra login complete for user ${syncedUser.id} — firing notification`);
           // Don't await — don't block the login response
@@ -253,6 +254,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.avatarUrl = appUser.avatarUrl;
           token.isActive = appUser.isActive;
           token.isEntraUser = appUser.isEntraUser;
+          token.isOnboarded = appUser.onboarded; // Example of adding a custom claim
         }
       }
 
@@ -268,6 +270,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           avatarUrl?: string | null;
           isActive?: boolean;
           isEntraUser?: boolean | null;
+          isOnboarded?: boolean;
         };
 
         if (typeof token.name === "string") session.user.name = token.name;
@@ -282,6 +285,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (typeof token.phone === "string") enrichedUser.phone = token.phone;
         if (typeof token.isActive === "boolean") enrichedUser.isActive = token.isActive;
         if (typeof token.isEntraUser === "boolean") enrichedUser.isEntraUser = token.isEntraUser;
+        if (typeof token.isOnboarded === "boolean") enrichedUser.isOnboarded = token.isOnboarded;
       }
 
       return session;

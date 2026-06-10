@@ -13,6 +13,7 @@ type ApiUserEntry = {
   isActive: boolean;
   isEntraUser: boolean;
   phone: string | null;
+  isOnboarded?: boolean;
   mailboxes: {
     id: string;
     email: string;
@@ -112,6 +113,9 @@ export function UsersTable() {
                   Entra User
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  User Provisioned
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Mailbox ID
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -155,8 +159,10 @@ export function UsersTable() {
                     <td className="px-4 py-3 text-sm text-foreground">{user.isActive ? "Yes" : "No"}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.id}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.isEntraUser ? "Yes" : "No"}</td>
+                    <td className="px-4 py-3 text-sm text-foreground">{user.isOnboarded ? "Yes" : "No"}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.mailboxes?.[0]?.id ?? "No mailbox Provisioned"}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{user.mailboxes?.[0]?.email ?? "No mailbox Provisioned"}</td>
+                 
                     
                      
           
