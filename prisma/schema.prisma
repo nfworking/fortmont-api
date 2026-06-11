@@ -49,6 +49,17 @@ model AppUsers {
 
   mailboxes    UserMailbox[]
   deviceTokens DeviceToken[]
+  passwordResetTokens PasswordResetToken[]
+
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+
+  user      AppUsers @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model DeviceToken {
