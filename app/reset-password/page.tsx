@@ -210,6 +210,7 @@ function ResetPasswordInner() {
         setCountdown((c) => {
           if (c <= 1) {
             clearInterval(intervalRef.current!);
+            
             router.push("/login");
             return 0;
           }

@@ -6,7 +6,7 @@ import { authConfig } from "@/lib/auth.config";
 const { auth } = NextAuth(authConfig);
 
 
-const publicRoutes = ["/apps"];
+const publicRoutes = ["/apps", "/forgot-password", "/reset-password", "/onboard"];
 const authPages = ["/login", "/login_webmail", "/signup"];
 
 export default auth((req) => {
