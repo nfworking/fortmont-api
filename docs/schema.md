@@ -1,179 +1,298 @@
 # Database Schema Documentation
 
-This document describes the database models used by the application.
+## Overview
+
+This database supports a homelab management platform that provides:
+
+* User authentication and account management
+* Password reset functionality
+* Mobile device notification registration
+* Mailbox management
+* Application registry and quick links
+* LXC container tracking
 
 ---
 
-# LXC
+# LXC Containers
 
-The `lxc` table stores information about registered Linux Containers (LXCs) managed by the platform.
+Stores information about Linux Containers (LXC) running within the homelab environment.
 
-## Purpose
+## Table: `lxc`
 
-Used as an LXC registry to track deployed containers, their roles, status, and compose state.
-
-## Fields
-
-| Field                | Type     | Description                                                                       |
-| -------------------- | -------- | --------------------------------------------------------------------------------- |
-| `lxc_unique_id`      | UUID     | Unique identifier for the container.                                              |
-| `lxc_ip`             | String   | IP address assigned to the container.                                             |
-| `lxc_role`           | String   | Role or purpose of the container (e.g. Web Server, Database Server, Mail Server). |
-| `lxc_status`         | String   | Current status of the container (Running, Stopped, Maintenance, etc.).            |
-| `lxc_compose_status` | String   | Docker Compose deployment status for the container.                               |
-| `created_at`         | DateTime | Date and time the container was registered.                                       |
+| Field                | Type     | Description                                                               |
+| -------------------- | -------- | ------------------------------------------------------------------------- |
+| `lxc_unique_id`      | UUID     | Unique identifier for the container.                                      |
+| `lxc_ip`             | String   | IP address assigned to the container.                                     |
+| `lxc_role`           | String   | Purpose or role of the container (e.g. Web Server, Database, Monitoring). |
+| `lxc_status`         | String   | Current container state (Running, Stopped, etc.).                         |
+| `lxc_compose_status` | String   | Docker Compose deployment status within the container.                    |
+| `created_at`         | DateTime | Timestamp when the record was created.                                    |
 
 ### Example
 
-```json
-{
-  "lxc_unique_id": "6f4c8b8e-3e8a-4c66-90fc-1c9c6d3d8c7f",
-  "lxc_ip": "10.0.10.25",
-  "lxc_role": "webserver",
-  "lxc_status": "running",
-  "lxc_compose_status": "healthy"
-}
+```text
+ID: 4b3c0d4e...
+IP: 192.168.1.20
+Role: Jellyfin
+Status: Running
+Compose Status: Healthy
 ```
 
 ---
 
-# Registry
+# Container Registry
 
-The `registry` table stores information about API servers registered within the platform.
+Stores container image registry information.
 
-## Purpose
+## Table: `registry`
 
-Used to track external or internal API endpoints that can be accessed by the application.
-
-## Fields
-
-| Field        | Type              | Description                              |
-| ------------ | ----------------- | ---------------------------------------- |
-| `id`         | UUID              | Unique identifier for the API server.    |
-| `name`       | String            | Friendly name of the API server.         |
-| `version`    | String            | Current version of the API service.      |
-| `hosted_on`  | String            | Server or host where the API is running. |
-| `server_url` | String (Optional) | Base URL used to access the API server.  |
+| Field        | Type              | Description                                |
+| ------------ | ----------------- | ------------------------------------------ |
+| `id`         | UUID              | Unique registry identifier.                |
+| `name`       | String            | Registry name.                             |
+| `version`    | String            | Registry version.                          |
+| `hosted_on`  | String            | Host server where the registry is running. |
+| `server_url` | String (Optional) | URL of the registry service.               |
 
 ### Example
 
-```json
-{
-  "id": "3d9b98f7-4b1e-42c1-9f7e-3d73a0f8ef11",
-  "name": "Fortmont API",
-  "version": "1.0.0",
-  "hosted_on": "prodapp01",
-  "server_url": "https://api.example.com"
-}
+```text
+Name: Harbor
+Version: 2.12.0
+Hosted On: docker01
+Server URL: https://registry.example.local
 ```
 
 ---
 
-# AppUsers
+# Users
 
-The `AppUsers` table stores application user accounts.
+Stores application user accounts.
 
-## Purpose
+## Table: `AppUsers`
 
-Provides authentication, authorization, and profile information for users accessing the platform.
-
-## Fields
-
-| Field          | Type              | Description                                                                      |
-| -------------- | ----------------- | -------------------------------------------------------------------------------- |
-| `id`           | UUID              | Unique identifier for the user.                                                  |
-| `username`     | String            | Unique username used for login.                                                  |
-| `displayName`  | String (Optional) | Display name shown throughout the application.                                   |
-| `email`        | String (Optional) | User email address.                                                              |
-| `role`         | String (Optional) | User role used for permissions and access control.                               |
-| `avatarUrl`    | String (Optional) | URL to the user's profile picture.                                               |
-| `phone`        | String (Optional) | Contact phone number.                                                            |
-| `isEntraUser`  | Boolean           | Indicates whether the account originates from Microsoft Entra ID authentication. |
-| `passwordHash` | String            | Securely hashed password.                                                        |
-| `isActive`     | Boolean           | Indicates whether the account is active.                                         |
-| `createdAt`    | DateTime          | Account creation timestamp.                                                      |
-| `updatedAt`    | DateTime          | Automatically updated when the record changes.                                   |
-
-### Relationships
-
-* One user can own multiple mailboxes.
-* Linked to the `UserMailbox` table through `userId`.
+| Field          | Type              | Description                                              |
+| -------------- | ----------------- | -------------------------------------------------------- |
+| `id`           | UUID              | Unique user identifier.                                  |
+| `username`     | String            | Unique login username.                                   |
+| `displayName`  | String (Optional) | Friendly display name.                                   |
+| `email`        | String (Optional) | User email address.                                      |
+| `role`         | String (Optional) | User role (Admin, User, Technician, etc.).               |
+| `avatarUrl`    | String (Optional) | Profile picture URL.                                     |
+| `phone`        | String (Optional) | Contact number.                                          |
+| `isEntraUser`  | Boolean           | Indicates if account originates from Microsoft Entra ID. |
+| `passwordHash` | String            | Hashed user password.                                    |
+| `isActive`     | Boolean           | Account enabled/disabled status.                         |
+| `createdAt`    | DateTime          | Account creation timestamp.                              |
+| `updatedAt`    | DateTime          | Last modification timestamp.                             |
+| `onboarded`    | Boolean           | Indicates whether initial setup has been completed.      |
 
 ---
 
-# UserMailbox
+## Relationships
 
-The `UserMailbox` table stores mailbox accounts associated with application users.
+An AppUser may own:
+
+* Multiple mailboxes
+* Multiple device tokens
+* Multiple password reset tokens
+
+```text
+AppUsers
+ ├── UserMailbox
+ ├── DeviceToken
+ └── PasswordResetToken
+```
+
+---
+
+# Password Reset Tokens
+
+Stores password reset requests.
+
+## Table: `PasswordResetToken`
+
+| Field       | Type     | Description                     |
+| ----------- | -------- | ------------------------------- |
+| `id`        | CUID     | Unique token identifier.        |
+| `userId`    | UUID     | User requesting password reset. |
+| `token`     | String   | Unique reset token.             |
+| `expiresAt` | DateTime | Token expiration time.          |
+
+## Relationship
+
+```text
+PasswordResetToken
+        │
+        ▼
+     AppUsers
+```
+
+### Notes
+
+* Tokens are unique.
+* Tokens expire automatically based on `expiresAt`.
+* Deleting a user removes associated reset tokens.
+
+---
+
+# Mobile Device Tokens
+
+Stores Firebase Cloud Messaging (FCM) device registrations.
+
+## Table: `DeviceToken`
+
+| Field             | Type              | Description                       |
+| ----------------- | ----------------- | --------------------------------- |
+| `id`              | UUID              | Unique device token identifier.   |
+| `token`           | String            | Firebase device token.            |
+| `platform`        | String            | Device platform (iOS or Android). |
+| `deviceVersion`   | String (Optional) | Operating system version.         |
+| `deviceName`      | String (Optional) | Device hostname/name.             |
+| `deviceModelName` | String (Optional) | Device model.                     |
+| `deviceBrand`     | String (Optional) | Device manufacturer.              |
+| `userId`          | UUID              | Associated user.                  |
+| `createdAt`       | DateTime          | Record creation timestamp.        |
+| `updatedAt`       | DateTime          | Last update timestamp.            |
 
 ## Purpose
 
-Allows users to have one or more email accounts managed by the platform.
+Used for:
 
-## Fields
+* Push notifications
+* Mobile alerts
+* Service outage notifications
+* Ticket updates
 
-| Field               | Type              | Description                                                  |
-| ------------------- | ----------------- | ------------------------------------------------------------ |
-| `id`                | UUID              | Unique mailbox identifier.                                   |
-| `userId`            | UUID              | Reference to the owning user.                                |
-| `email`             | String            | Mailbox email address.                                       |
-| `encryptedPassword` | String            | Encrypted mailbox password.                                  |
-| `isPrimary`         | Boolean           | Determines whether this is the user's primary mailbox.       |
-| `provider`          | String (Optional) | Mail provider type (e.g. `mailcow`, `external`, `exchange`). |
-| `createdAt`         | DateTime          | Mailbox creation timestamp.                                  |
-| `updatedAt`         | DateTime          | Automatically updated when the record changes.               |
-
-### Relationships
+### Relationship
 
 ```text
 AppUsers
     │
-    ├── 1:N
-    │
-UserMailbox
+    └── DeviceToken
 ```
 
-A single application user may own multiple mailbox accounts.
+---
+
+# User Mailboxes
+
+Stores email accounts associated with users.
+
+## Table: `UserMailbox`
+
+| Field               | Type              | Description                 |
+| ------------------- | ----------------- | --------------------------- |
+| `id`                | UUID              | Unique mailbox identifier.  |
+| `userId`            | UUID              | Associated user account.    |
+| `email`             | String            | Mailbox email address.      |
+| `encryptedPassword` | String            | Encrypted mailbox password. |
+| `isPrimary`         | Boolean           | Indicates primary mailbox.  |
+| `provider`          | String (Optional) | Mail provider source.       |
+| `createdAt`         | DateTime          | Creation timestamp.         |
+| `updatedAt`         | DateTime          | Last update timestamp.      |
+
+### Supported Providers
+
+Examples:
+
+* Mailcow
+* Microsoft 365
+* Gmail
+* External IMAP Server
+
+### Relationship
+
+```text
+AppUsers
+    │
+    └── UserMailbox
+```
 
 ### Constraints
 
-* `userId + email` must be unique.
-* Deleting a user automatically deletes all associated mailboxes (`Cascade Delete`).
+```text
+(userId, email) must be unique
+```
+
+This prevents duplicate mailbox assignments for the same user.
+
+---
+
+# Applications
+
+Stores application shortcuts and service links.
+
+## Table: `Apps`
+
+| Field         | Type              | Description                       |
+| ------------- | ----------------- | --------------------------------- |
+| `id`          | UUID              | Unique application identifier.    |
+| `label`       | String            | Application name shown in the UI. |
+| `description` | String (Optional) | Description of the application.   |
+| `url`         | String            | Application URL.                  |
 
 ### Example
 
-```json
-{
-  "email": "user@example.com",
-  "provider": "mailcow",
-  "isPrimary": true
-}
+```text
+Label: Jellyfin
+Description: Media Server
+URL: https://jellyfin.example.local
 ```
+
+### Use Cases
+
+* Dashboard quick links
+* Application launcher
+* Homelab service catalogue
+* Internal service directory
 
 ---
 
-# Entity Relationships
+# Entity Relationship Diagram
 
 ```text
-AppUsers
-    │
-    └───< UserMailbox
+                    ┌─────────────────┐
+                    │    AppUsers     │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
 
-LXC
-    │
-    └── Independent Resource Registry
+┌────────────────┐  ┌────────────────┐  ┌────────────────────┐
+│ UserMailbox    │  │ DeviceToken    │  │ PasswordResetToken │
+└────────────────┘  └────────────────┘  └────────────────────┘
 
-Registry
-    │
-    └── API Server Registry
+
+┌────────────────┐
+│      Apps      │
+└────────────────┘
+
+
+┌────────────────┐
+│      lxc       │
+└────────────────┘
+
+
+┌────────────────┐
+│    registry    │
+└────────────────┘
 ```
 
 ---
 
-# Summary
+# Design Notes
 
-| Model         | Purpose                                                               |
-| ------------- | --------------------------------------------------------------------- |
-| `lxc`         | Stores registered Linux Containers and deployment status information. |
-| `registry`    | Stores registered API servers and service endpoints.                  |
-| `AppUsers`    | Stores application user accounts and authentication information.      |
-| `UserMailbox` | Stores mailbox accounts associated with application users.            |
+This schema separates infrastructure, user management, and application management into distinct entities.
+
+Key design principles:
+
+* UUID-based identifiers throughout the system.
+* Automatic timestamp tracking.
+* Cascade deletion for dependent user records.
+* Support for multiple mailboxes per user.
+* Support for multiple mobile devices per user.
+* Flexible application catalogue.
+* Infrastructure inventory tracking for LXC containers and registries.
+
+This structure provides a solid foundation for a homelab management portal, service dashboard, ticketing platform, and mobile notification system.

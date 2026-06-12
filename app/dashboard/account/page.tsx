@@ -95,7 +95,7 @@ export default async function AccountPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       {/* Page header */}
-      <section className="rounded-2xl border border-border/60 bg-linear-to-br from-background via-background to-muted/30 p-6 shadow-sm">
+      <section className="rounded-2xl border border-border/60 bg-transparent p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4">
             <div className="space-y-2">
@@ -118,7 +118,7 @@ export default async function AccountPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 rounded-2xl border border-border/60 bg-background/70 p-4 shadow-sm backdrop-blur">
+          <div className="flex items-center gap-4 rounded-2xl border border-border/60 bg-transparent p-4 shadow-sm backdrop-blur">
             <Avatar className="h-16 w-16 rounded-2xl">
               <AvatarImage
                 src={user?.avatarUrl ?? undefined}
@@ -183,13 +183,13 @@ export default async function AccountPage() {
         </Card>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-6 background-transparent">
           <Card>
             <CardHeader>
               <CardTitle>Account details</CardTitle>
               <CardDescription>Read-only identity and lifecycle data.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+            <CardContent className="space-y-4 text-sm background-transparent">
               {user ? (
                 <>
                   <DetailRow label="User ID" value={user.id} />
