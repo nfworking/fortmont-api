@@ -11,37 +11,32 @@ export interface SidebarSection {
 
 export const sidebarConfig: SidebarSection[] = [
   {
-    title: "Getting Started",
+    title: "IT Support",
     items: [
-      { title: "Introduction", url: "/docs" },
-      { title: "Quick Start", url: "/docs/quick-start" },
-      { title: "Installation", url: "/docs/installation" },
+      { title: "Getting Started", url: "/docs" },
+      { title: "Key Terms", url: "/docs/quick-start" }
     ],
   },
   {
-    title: "Core Concepts",
+    title: "Lab Overview",
     items: [
-      { title: "Architecture", url: "/docs/architecture" },
-      { title: "Components", url: "/docs/components" },
-      { title: "State Management", url: "/docs/state" },
-      { title: "Routing", url: "/docs/routing" },
+      { title: "Infrastructure", url: "/docs" },
+      { title: "Network", url: "/docs/quick-start" },
+      { title: "Services", url: "/docs/quick-start" },
+      { title: "Security", url: "/docs/quick-start" },
     ],
   },
   {
-    title: "API Reference",
+    title: "Remote Access",
     items: [
-      { title: "Overview", url: "/docs/api" },
-      { title: "Authentication", url: "/docs/api/auth" },
-      { title: "Endpoints", url: "/docs/api/endpoints", badge: "New" },
-      { title: "Webhooks", url: "/docs/api/webhooks" },
+      { title: "Tailscale", url: "/docs" }      
     ],
   },
   {
-    title: "Guides",
+    title: "Automation Services",
     items: [
-      { title: "Deployment", url: "/docs/deployment" },
-      { title: "Best Practices", url: "/docs/best-practices" },
-      { title: "Examples", url: "/docs/examples" },
+      { title: "Tailscale", url: "/docs" }      
     ],
   },
+  
 ];

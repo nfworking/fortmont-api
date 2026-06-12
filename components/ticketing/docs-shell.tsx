@@ -6,7 +6,7 @@ import { SidebarNav } from "./sidebar-nav";
 import { SearchCommand } from "./search-command";
 import { UserDropdown } from "./user-dropdown";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Book } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DocsShellProps {
@@ -38,10 +38,10 @@ export function DocsShell({ children, user }: DocsShellProps) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b px-4">
+        <div className="flex h-16 items-center justify-between border-b px-4 ml-3">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded bg-foreground" />
-            <span className="font-semibold">Docs</span>
+            <Book/>
+            <span className="font-semibold">Fortmont KBA</span>
           </Link>
           <Button
             variant="ghost"
@@ -56,7 +56,7 @@ export function DocsShell({ children, user }: DocsShellProps) {
       </aside>
 
       {/* Main content area */}
-      <div className="lg:pl-64">
+      <div className="">
         {/* Header */}
         <header className="sticky top-0 z-30 flex h-16 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex flex-1 items-center gap-4 px-4">
