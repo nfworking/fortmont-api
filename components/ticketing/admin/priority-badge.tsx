@@ -10,7 +10,7 @@ const priorityVariants = cva(
         LOW: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
         MEDIUM: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
         HIGH: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400',
-        CRITICAL: 'bg-red-600 text-white dark:bg-red-500/80 dark:text-white',
+        URGENT: 'bg-red-600 text-white dark:bg-red-500/80 dark:text-white',
       },
     },
     defaultVariants: {
@@ -22,7 +22,7 @@ const priorityVariants = cva(
 interface PriorityBadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof priorityVariants> {
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 }
 
 export function PriorityBadge({ priority, className, ...props }: PriorityBadgeProps) {

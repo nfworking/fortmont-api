@@ -38,15 +38,17 @@ const statusLabels: Record<TicketStatus, string> = {
 };
 
 interface StatusBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  status: TicketStatus;
+  status: TicketStatus | string | null;
 }
 
 export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
-  const icon = statusIcons[status];
-  const label = statusLabels[status];
+  const normalizedStatus = (status ?? 'open').toLowerCase() as TicketStatus;
+  const safeStatus = normalizedStatus in statusLabels ? normalizedStatus : 'open';
+  const icon = statusIcons[safeStatus];
+  const label = statusLabels[safeStatus];
 
   return (
-    <span className={cn(statusVariants({ status }), className)} {...props}>
+    <span className={cn(statusVariants({ status: safeStatus }), className)} {...props}>
       {icon}
       {label}
     </span>

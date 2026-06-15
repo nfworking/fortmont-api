@@ -1,8 +1,12 @@
 import {
   Building2,
   Calendar,
-  MessageSquare,
+  CheckCircle2,
+  Clock,
   MoreHorizontal,
+  PlayCircle,
+  UserRound,
+  XCircle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,10 +28,13 @@ import { cn } from '@/lib/utils';
 interface TicketCardProps {
   ticket: Ticket;
   onClick?: (ticket: Ticket) => void;
+  onQuickUpdate?: (ticket: Ticket, updates: Partial<Ticket>) => void;
 }
 
-export function TicketCard({ ticket, onClick }: TicketCardProps) {
-  const initials = ticket.assignedTo.displayName
+export function TicketCard({ ticket, onClick, onQuickUpdate }: TicketCardProps) {
+  const assigneeName = ticket.assignedTo?.displayName ?? ticket.assignedTo?.email ?? 'Unassigned';
+  const creatorName = ticket.createdBy?.displayName ?? ticket.createdBy?.email ?? 'Unknown creator';
+  const initials = assigneeName
     .split(' ')
     .map((n) => n[0])
     .join('')
@@ -73,8 +80,8 @@ export function TicketCard({ ticket, onClick }: TicketCardProps) {
                 <span>{createdAgo}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <MessageSquare className="h-3.5 w-3.5" />
-                <span>0 comments</span>
+                <UserRound className="h-3.5 w-3.5" />
+                <span>{creatorName}</span>
               </div>
             </div>
           </div>
@@ -92,11 +99,22 @@ export function TicketCard({ ticket, onClick }: TicketCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>View Details</DropdownMenuItem>
-                <DropdownMenuItem>Edit Ticket</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onQuickUpdate?.(ticket, { status: 'in_progress' })}>
+                  <PlayCircle className="h-4 w-4" />
+                  Mark in progress
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onQuickUpdate?.(ticket, { status: 'pending' })}>
+                  <Clock className="h-4 w-4" />
+                  Mark pending
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onQuickUpdate?.(ticket, { status: 'resolved' })}>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Resolve
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
-                  Delete Ticket
+                <DropdownMenuItem onClick={() => onQuickUpdate?.(ticket, { status: 'closed' })}>
+                  <XCircle className="h-4 w-4" />
+                  Close
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -105,11 +123,13 @@ export function TicketCard({ ticket, onClick }: TicketCardProps) {
               <div className="flex flex-col items-end">
                 <span className="text-xs text-muted-foreground">Assigned to</span>
                 <span className="text-sm font-medium">
-                  {ticket.assignedTo.displayName}
+                  {assigneeName}
                 </span>
               </div>
               <Avatar className="h-8 w-8">
-                <AvatarImage src={ticket.assignedTo.avatarUrl} alt={ticket.assignedTo.displayName} />
+                {ticket.assignedTo?.avatarUrl && (
+                  <AvatarImage src={ticket.assignedTo.avatarUrl} alt={assigneeName} />
+                )}
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
             </div>

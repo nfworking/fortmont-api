@@ -1,20 +1,20 @@
 export interface User {
   id: string;
   username: string;
-  displayName: string;
-  email: string;
-  role: string | null;
-  avatarUrl: string;
-  phone: string;
-  isEntraUser: boolean;
-  passwordHash: string;
+  displayName: string | null;
+  email: string | null;
+  role?: string | null;
+  avatarUrl?: string | null;
+  phone: string | null;
+  isEntraUser: boolean | null;
+  passwordHash?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  onboarded: boolean;
+  onboarded: boolean | null;
 }
 
-export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 export type TicketStatus = 'open' | 'in_progress' | 'pending' | 'resolved' | 'closed';
 
 export interface Ticket {
@@ -24,11 +24,11 @@ export interface Ticket {
   subject: string;
   description: string;
   priority: TicketPriority;
-  status: TicketStatus;
-  createdById: string;
-  assignedToId: string;
+  status: TicketStatus | string | null;
+  createdById: string | null;
+  assignedToId: string | null;
   createdAt: string;
   updatedAt: string;
-  createdBy: User;
-  assignedTo: User;
+  createdBy: User | null;
+  assignedTo: User | null;
 }

@@ -10,8 +10,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Ticket } from './ticket';
 
 interface TicketFiltersProps {
+  tickets: Ticket[];
   onFilterChange: (filters: FilterState) => void;
 }
 
@@ -23,21 +25,23 @@ export interface FilterState {
   status: string;
 }
 
-const departments = [
-  'All Departments',
-  'Remote Access',
-  'Network Operations',
-  'System Administration',
-  'Security',
-  'Desktop Support',
-  'Database Management',
-];
+const priorities = ['All Priorities', 'LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+const statuses = ['All Statuses', 'open', 'in_progress', 'pending', 'resolved', 'closed'];
 
-const priorities = ['All Priorities', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
-const types = ['All Types', 'Incident', 'Service Request', 'Change Request', 'Problem'];
-const statuses = ['All Statuses', 'OPEN', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED'];
+function uniqueValues(tickets: Ticket[], key: 'department' | 'type') {
+  return Array.from(
+    new Set(tickets.map((ticket) => ticket[key]).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b));
+}
 
-export function TicketFilters({ onFilterChange }: TicketFiltersProps) {
+function statusLabel(status: string) {
+  return status
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+export function TicketFilters({ tickets, onFilterChange }: TicketFiltersProps) {
   const [filters, setFilters] = React.useState<FilterState>({
     search: '',
     priority: 'All Priorities',
@@ -46,6 +50,14 @@ export function TicketFilters({ onFilterChange }: TicketFiltersProps) {
     status: 'All Statuses',
   });
   const [showFilters, setShowFilters] = React.useState(false);
+  const departments = React.useMemo(
+    () => ['All Departments', ...uniqueValues(tickets, 'department')],
+    [tickets]
+  );
+  const types = React.useMemo(
+    () => ['All Types', ...uniqueValues(tickets, 'type')],
+    [tickets]
+  );
 
   const updateFilter = (key: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [key]: value };
@@ -67,7 +79,11 @@ export function TicketFilters({ onFilterChange }: TicketFiltersProps) {
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'search') return value !== '';
-    return value !== `All ${key.charAt(0).toUpperCase() + key.slice(1)}${key === 'priority' ? 's' : key === 'type' ? 's' : ''}`;
+    if (key === 'priority') return value !== 'All Priorities';
+    if (key === 'department') return value !== 'All Departments';
+    if (key === 'type') return value !== 'All Types';
+    if (key === 'status') return value !== 'All Statuses';
+    return false;
   }).length;
 
   return (
@@ -132,7 +148,7 @@ export function TicketFilters({ onFilterChange }: TicketFiltersProps) {
               <SelectContent>
                 {statuses.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {s}
+                    {s === 'All Statuses' ? s : statusLabel(s)}
                   </SelectItem>
                 ))}
               </SelectContent>

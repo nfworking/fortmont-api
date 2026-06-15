@@ -70,9 +70,10 @@ interface StatsCardsProps {
   stats: {
     total: number;
     open: number;
+    unassigned: number;
     inProgress: number;
     resolved: number;
-    critical: number;
+    urgent: number;
   };
 }
 
@@ -83,7 +84,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
         title="Total Tickets"
         value={stats.total}
         icon={<BarChart3 className="h-5 w-5" />}
-        trend={{ value: 12, isPositive: true }}
       />
       <StatCard
         title="Open"
@@ -91,6 +91,13 @@ export function StatsCards({ stats }: StatsCardsProps) {
         description="Awaiting triage"
         icon={<Circle className="h-5 w-5" />}
         variant="warning"
+      />
+      <StatCard
+        title="Unassigned"
+        value={stats.unassigned}
+        description="Needs an owner"
+        icon={<AlertTriangle className="h-5 w-5" />}
+        variant={stats.unassigned > 0 ? 'danger' : 'default'}
       />
       <StatCard
         title="In Progress"
@@ -105,8 +112,8 @@ export function StatsCards({ stats }: StatsCardsProps) {
         variant="success"
       />
       <StatCard
-        title="Critical"
-        value={stats.critical}
+        title="Urgent"
+        value={stats.urgent}
         description="Requires immediate attention"
         icon={<AlertTriangle className="h-5 w-5" />}
         variant="danger"

@@ -27,6 +27,10 @@ export async function PATCH(
           assignedToId: body.assignedToId,
         }),
       },
+      include: {
+        createdBy: true,
+        assignedTo: true,
+      },
     });
 
     return NextResponse.json(ticket);
