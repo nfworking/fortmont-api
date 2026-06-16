@@ -11,6 +11,7 @@ export async function GET() {
     include: {
       createdBy: true,
       assignedTo: true,
+      comments: true,
     },
     orderBy: {
       createdAt: "desc",

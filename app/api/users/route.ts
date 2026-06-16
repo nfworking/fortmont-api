@@ -12,6 +12,11 @@ function sanitizeAppUser(user: {
   createdAt: Date;
   updatedAt: Date;
   phone: string | null;
+  teams: {
+    id: string;
+    name: string;
+    description: string | null;
+  }[];
 }) {
   return user;
 }
@@ -44,6 +49,13 @@ export async function GET(req: Request) {
         id: true,
         email: true,
         isPrimary: true,
+      },
+    },
+    teams: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
       },
     },
   },
