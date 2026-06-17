@@ -43,6 +43,17 @@ export default async function DashboardLayoutAdmin({
 
   return (
     <div className="relative min-h-screen w-full">
+      <div className="fixed inset-0 -z-10">
+           <Image
+             src="/dashboard2.jpg"
+             alt="Dashboard Background"
+             width={1000}
+             height={1080}
+             unoptimized
+             loading="eager"
+             className="object-cover w-full h-full opacity-20"
+           />
+      </div>
         <TicketShell user={session?.user}>{children}</TicketShell>
      
     </div>

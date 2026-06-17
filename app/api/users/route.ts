@@ -58,6 +58,16 @@ export async function GET(req: Request) {
         description: true,
       },
     },
+    notifications: {
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        description: true,
+        read: true,
+        createdAt: true,
+      },
+    },
   },
 });
 

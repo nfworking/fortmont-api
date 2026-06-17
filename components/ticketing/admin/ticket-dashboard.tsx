@@ -666,54 +666,84 @@ export function TicketDashboard({ tickets = [], users: initialUsers = [] }: Tick
     [selectedTicketId, ticketRows]
   );
 
-  // 🔥 REAL-TIME NOTIFICATIONS EFFECT HOOK
-  // 🔥 REAL-TIME NOTIFICATIONS EFFECT HOOK
+  // Real-time comment updates for the currently open ticket via SSE.
+  // The previous version never closed a connection on error, so a dropped
+  // connection would sit half-open while the browser's built-in EventSource
+  // retry kept hitting the endpoint — each attempt left the server's Redis
+  // subscriber for the old connection running until it eventually timed out.
+  // This version explicitly closes the connection on error and reopens it
+  // itself with a short backoff, so there's only ever one live connection
+  // (and one live Redis subscription) per ticket at a time.
   React.useEffect(() => {
     if (!selectedTicketId) return;
 
-    // Open connection to the dynamic streaming server endpoint
-    const eventSource = new EventSource(`/api/ticketing/stream/tickets/${selectedTicketId}/stream`);
+    let eventSource: EventSource | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+    let attempt = 0;
 
-    eventSource.onmessage = (event) => {
-      try {
-        const parsedData = JSON.parse(event.data);
+    const connect = () => {
+      if (cancelled) return;
 
-        // Ignore the initial server pipeline verification packet
-        if (parsedData?.status === 'connected') {
-          console.log('Real-time notification pipeline connected successfully.');
-          return;
+      eventSource = new EventSource(`/api/ticketing/stream/tickets/${selectedTicketId}/stream`);
+
+      eventSource.onopen = () => {
+        attempt = 0;
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const parsedData = JSON.parse(event.data);
+
+          // Ignore the initial server pipeline verification packet
+          if (parsedData?.status === 'connected') {
+            return;
+          }
+
+          const newComment: Comment = parsedData;
+
+          setTicketRows((currentRows) =>
+            currentRows.map((row) => {
+              if (row.id !== selectedTicketId) return row;
+
+              // Safeguard against duplicate comments if the current user authored it
+              const commentExists = row.comments?.some((c) => c.id === newComment.id);
+              if (commentExists) return row;
+
+              return {
+                ...row,
+                comments: [...(row.comments ?? []), newComment],
+              };
+            })
+          );
+        } catch (err) {
+          console.error('Failed to parse incoming streaming comment payload:', err);
         }
+      };
 
-        const newComment: Comment = parsedData;
+      eventSource.onerror = () => {
+        // Close immediately so the server sees a clean disconnect and tears
+        // down its Redis subscription, rather than leaving a half-open
+        // socket for it to time out on. Reconnect ourselves with backoff
+        // instead of relying on the browser's default (immediate) retry.
+        eventSource?.close();
+        eventSource = null;
 
-        setTicketRows((currentRows) =>
-          currentRows.map((row) => {
-            if (row.id !== selectedTicketId) return row;
+        if (cancelled) return;
 
-            // Safeguard against duplicate comments if the current user authored it
-            const commentExists = row.comments?.some((c) => c.id === newComment.id);
-            if (commentExists) return row;
-
-            return {
-              ...row,
-              comments: [...(row.comments ?? []), newComment],
-            };
-          })
-        );
-      } catch (err) {
-        console.error('Failed to parse incoming streaming comment payload:', err);
-      }
+        attempt += 1;
+        const delay = Math.min(1000 * 2 ** (attempt - 1), 15000);
+        reconnectTimer = setTimeout(connect, delay);
+      };
     };
 
-    eventSource.onerror = (err) => {
-      // Browsers naturally drop and reconnect streams during inactive tabs.
-      // This log becomes a warning instead of a fatal terminal sequence.
-      console.warn('Real-time connection dropped. Retrying sync pipeline background loop...', err);
-    };
+    connect();
 
     // Clean up connection instantly when shifting tickets or closing details panel
     return () => {
-      eventSource.close();
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      eventSource?.close();
     };
   }, [selectedTicketId]);
 
@@ -765,8 +795,10 @@ export function TicketDashboard({ tickets = [], users: initialUsers = [] }: Tick
     return result;
   }, [activeTab, filters, ticketRows]);
 
-  const handleRefresh = async () => {
-    setIsLoading(true);
+  const handleRefresh = React.useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (!silent) setIsLoading(true);
+
     try {
       const res = await fetch(`/api/ticketing/get/ticket?refresh=${Date.now()}`, {
         cache: 'no-store',
@@ -775,10 +807,30 @@ export function TicketDashboard({ tickets = [], users: initialUsers = [] }: Tick
       if (!res.ok) throw new Error(`Refresh failed with ${res.status}`);
       const refreshedTickets = await res.json();
       setTicketRows(refreshedTickets);
+    } catch (error) {
+      // Background polling failures shouldn't surface as hard errors —
+      // just log and let the next poll try again.
+      console.error('Ticket refresh failed:', error);
+      if (!silent) throw error;
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Auto-refresh the ticket list every few seconds so the queue stays
+  // current without a manual reload. Silent (no spinner) so it doesn't
+  // flicker the UI, and paused while a comment is mid-submit so a poll
+  // can't overwrite the optimistic comment update before the POST resolves.
+  const POLL_INTERVAL_MS = 5000;
+
+  React.useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (isSubmittingComment) return;
+      handleRefresh({ silent: true });
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [isSubmittingComment, handleRefresh]);
 
   const handleTicketUpdate = async (ticket: Ticket, updates: Partial<Ticket>) => {
     const previousRows = ticketRows;
@@ -890,7 +942,7 @@ export function TicketDashboard({ tickets = [], users: initialUsers = [] }: Tick
   };
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
+    <div className="min-h-screen bg-transparent transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -900,8 +952,8 @@ export function TicketDashboard({ tickets = [], users: initialUsers = [] }: Tick
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
+            
+            <Button variant="outline" onClick={() => handleRefresh()} disabled={isLoading}>
               <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
               Refresh
             </Button>
