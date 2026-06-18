@@ -43,7 +43,7 @@ export function ApplicationShell1({ className, children, user }: ApplicationShel
 
   return (
     <SidebarProvider
-      className={cn(className, "bg-transparent")}
+      className={cn(className, "bg-transparent ")}
       style={
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",
