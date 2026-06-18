@@ -221,7 +221,7 @@ export function ChartAreaInteractive() {
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 @xl/card:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 @xl/card:grid-cols-4 ">
         {[
           {
             label: "Cluster RAM",

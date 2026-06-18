@@ -279,7 +279,7 @@ export function NotificationPanel() {
         <Button
           variant="outline"
           size="icon"
-          className="relative border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+          className="relative border-zinc-800 bg-transparent backdrop-blur text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
@@ -292,7 +292,7 @@ export function NotificationPanel() {
 
       <PopoverContent
         align="end"
-        className="w-80 border-zinc-800 bg-black p-0 text-zinc-100 sm:w-96"
+        className="w-80 border-zinc-800 bg-background/50 backdrop-blur p-0 text-zinc-100 sm:w-96"
       >
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">

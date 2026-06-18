@@ -95,7 +95,7 @@ export default async function AccountPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       {/* Page header */}
-      <section className="rounded-2xl border border-border/60 bg-transparent p-6 shadow-sm">
+      <section className="rounded-2xl border border-border/60 bg-black transition-all duration-300 blurred:bg-transparent blurred:backdrop-blur p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4">
             <div className="space-y-2">
@@ -118,7 +118,7 @@ export default async function AccountPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 rounded-2xl border border-border/60 bg-transparent p-4 shadow-sm backdrop-blur">
+          <div className="flex items-center gap-4 rounded-2xl border border-border/60 bg-black transition-all duration-300 blurred:bg-transparent blurred:backdrop-blur p-4 shadow-sm ">
             <Avatar className="h-16 w-16 rounded-2xl">
               <AvatarImage
                 src={user?.avatarUrl ?? undefined}
@@ -145,7 +145,7 @@ export default async function AccountPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
         {/* Edit form */}
-        <Card>
+        <Card className=" bg-black transition-all duration-300 blurred:bg-transparent blurred:backdrop-blur">
           <CardHeader>
             <CardTitle>Edit profile</CardTitle>
             <CardDescription>
@@ -184,7 +184,7 @@ export default async function AccountPage() {
 
         {/* Sidebar */}
         <div className="space-y-6 background-transparent">
-          <Card>
+          <Card className=" bg-black transition-all duration-300 blurred:bg-transparent blurred:backdrop-blur">
             <CardHeader>
               <CardTitle>Account details</CardTitle>
               <CardDescription>Read-only identity and lifecycle data.</CardDescription>
@@ -249,7 +249,7 @@ export default async function AccountPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className=" bg-black transition-all duration-300 blurred:bg-transparent blurred:backdrop-blur">
             <CardHeader>
               <CardTitle>Security notes</CardTitle>
               <CardDescription>

@@ -39,7 +39,7 @@ export function NavUser({ user }: Props) {
     .toUpperCase()
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="bg-transparent backdrop-blur">
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -61,7 +61,7 @@ export function NavUser({ user }: Props) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg bg-transparent backdrop-blur"
             side={isMobile ? "bottom" : "top"}
             align="end"
             sideOffset={4}

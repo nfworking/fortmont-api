@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, The_Girl_Next_Door } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import TransitionLayout from "@/components/transitionlayout";
+import { BlurProvider } from "@/components/blur-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +16,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-
 export const metadata: Metadata = {
-  title: "Fortmont  "};
+  title: "Fortmont",
+};
 
 export default async function RootLayout({
   children,
@@ -31,16 +32,13 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-          <Toaster  />
-        <TransitionLayout>
-          <Providers session={null}>
-            {children}
-         
-          </Providers>
-        </TransitionLayout>
+        <Toaster />
+        <BlurProvider>
+          <TransitionLayout>
+            <Providers session={null}>{children}</Providers>
+          </TransitionLayout>
+        </BlurProvider>
       </body>
     </html>
   );
 }
-
-

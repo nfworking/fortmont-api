@@ -51,8 +51,8 @@ export function ApplicationShell1({ className, children, user }: ApplicationShel
         } as CSSProperties
       }
     >
-      <AppSidebar variant="inset" user={user ?? null} className="bg-transparent" />
-      <SidebarInset className="bg-transparent">
+      <AppSidebar variant="inset" user={user ?? null} className="bg-transparent backdrop-blur" />
+      <SidebarInset className="bg-transparent backdrop-blur">
         <SiteHeader title={title} />
         {children}
       </SidebarInset>
