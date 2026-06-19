@@ -302,14 +302,18 @@ export default async function AccountPage() {
                     : "None"
                 }
               />
-              <DetailRow label="Device Brand" value={deviceBrand} />
-              <DetailRow
-                label="Device Model"
-                value={
-                  user?.deviceTokens?.[0]?.deviceModelName ??
-                  "No device model set"
-                }
-              />
+              {user?.deviceTokens?.[0] && (
+                <>
+                  <DetailRow label="Device Brand" value={deviceBrand} />
+                  <DetailRow
+                    label="Device Model"
+                    value={
+                      user?.deviceTokens?.[0]?.deviceModelName ??
+                      "No device model set"
+                    }
+                  />
+                </>
+              )}
               <Separator />
               <DetailRow
                 label="Teams"
@@ -317,16 +321,18 @@ export default async function AccountPage() {
                   user?.teams?.length ? `${user.teams.length} joined` : "None"
                 }
               />
-              <DetailRow
-                label="Team names"
-                value={
-                  user?.teams?.length
-                    ? user.teams
+              {user?.teams?.length ? user.teams.length > 0 : false && (
+                <DetailRow
+                  label="Team names"
+                  value={
+                    user?.teams?.length
+                      ? user?.teams
                         .map((t) => `${t.name}: ${t.description}`)
                         .join(", ")
-                    : "No teams joined"
-                }
-              />
+                      : "No teams joined"
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </div>

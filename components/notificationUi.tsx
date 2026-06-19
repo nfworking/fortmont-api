@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  ArrowUpAZ,
   Bell,
   Check,
   CheckCheck,
@@ -313,8 +314,18 @@ export function NotificationPanel() {
               <CheckCheck className="h-3.5 w-3.5" />
               Mark all read
             </Button>
+            
           )}
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1 text-xs text-zinc-400 hover:text-zinc-100"
+          onClick={() => window.location.href = "/admin_ticketing"} 
+        >
+          <ArrowUpAZ className="h-3.5 w-3.5" />
+          View all notifications
+        </Button>
 
         <Separator className="bg-zinc-800" />
 

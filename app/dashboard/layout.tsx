@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { DashboardBackground } from "@/components/dashboard_res/background";
 import Image from "next/image";
 import {SessionProvider} from "next-auth/react"
+import { TicketModalProvider } from "@/components/ticket-modal-context";
 
 export default async function DashboardLayout({
   children,
@@ -46,7 +47,7 @@ export default async function DashboardLayout({
 
       <div className="relative min-h-screen w-full">
             <SessionProvider session={session}>
-     
+      <TicketModalProvider>
         {/* Fixed background layer */}
         <div className="fixed inset-0 -z-10">
        <Image
@@ -74,6 +75,7 @@ export default async function DashboardLayout({
       >
         {children}
       </ApplicationShell1>
+      </TicketModalProvider>
       </SessionProvider>
     </div>
     
