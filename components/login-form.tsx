@@ -82,7 +82,7 @@ export function LoginForm({
             id="username"
             name="username"
             type="text"
-            placeholder="your.username"
+            placeholder=""
             required
             className="bg-background"
             autoComplete="username"
