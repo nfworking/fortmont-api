@@ -100,6 +100,6 @@ export default auth((req) => {
 export const config = {
   // Balanced matcher to catch all standard pages while ignoring static assets
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4)$).*)",
   ],
 };
