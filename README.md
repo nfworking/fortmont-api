@@ -2,12 +2,13 @@
 
 ### Requirements
 
-- Mysql Server v8.0.0 or higher and open to 0.0.0.0 or LAN ip
-- A mysql user with access for logon from any host
-- A server with 2GB RAM and port 80 open for Fortmont Web
-- A Azure free account or access to Microsoft Entra ID, with application, users and group creation permisssions (optional)
-- A provisioned mailbox server (curently tested with mailcow) with IMAPS (tls)
-- A reverse proxy pointing to the instance and port of Fortmont Web (used for secure cookie auth, required)
+- A database server, preferably mysql with a user able to access from remote connections
+- A Microsoft Entra ID tenant if you wish to add entra ID authentication to the platform
+- A Github O-Auth application for intergration with live github account stats
+- A provisioned Mail server that uses tls (preferred) avaiable on the network
+- A DNS server with HTTP REST capability for getting dns server records as well as the ability to create them
+- A Reverse proxy server with a HTTP REST endpoint for retriving proxy server records
+- A proxmox server as it the application primarly uses it for statistics and platform stats.
 
 
 
@@ -32,9 +33,6 @@ pnpm run dev
 
 ```
 
-### Use the included Webui for viewing database entries
-
-- Open {your_configured_url_in_reverse_proxy}/dashboard
 
 
 ### API documentation can be found in the [API Docs](./docs/api_usage.md)
