@@ -44,6 +44,7 @@ model AppUsers {
   comments            Comment[]
   githubLink          GitHubLink[]
   notifications Notifications[]
+  sessions      UserSession[]
 
 }
 
@@ -185,4 +186,22 @@ model Team {
   description String?
   members     AppUsers[]
   tickets     Tickets[]
+}
+
+model UserSession {
+  id            String   @id @default(uuid())
+  userId        String
+  sessionToken  String   @unique
+  userAgent     String?  @db.Text
+  ipAddress     String?
+  cookieVersion Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastActive    DateTime @default(now())
+  expiresAt     DateTime
+
+  user          AppUsers @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_sessions")
 }

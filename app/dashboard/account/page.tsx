@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AccountSettingsForm } from "@/components/account-settings-form";
+import { ActiveSessionsCard } from "@/components/active-sessions-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,7 +37,11 @@ function getInitials(value: string | null | undefined) {
     .toUpperCase();
 }
 
-export default async function AccountPage() {
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+import React from "react";
+export default async function AccountPage(): Promise<React.ReactElement> {
   const session = await auth();
 
   if (!session?.user) {
@@ -51,7 +56,10 @@ export default async function AccountPage() {
     image?: string | null;
     username?: string | null; // set by your jwt callback if available
     sub?: string | null; // raw JWT subject — often the user id
+    sessionId?: string | null;
   };
+
+  const currentSessionId = sessionUser.sessionId;
 
   // Build the lookup candidates — prefer id, fall back to email only.
   // Avoid matching on name/username since session.user.name is typically
@@ -184,48 +192,52 @@ export default async function AccountPage() {
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
-        {/* Edit form */}
-        <Card className="  transition-all duration-300 bg-transparent backdrop-blur">
-          <CardHeader>
-            <CardTitle>Edit profile</CardTitle>
-            <CardDescription>
-              These are the profile fields that can be updated from your account
-              page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {user ? (
-              <AccountSettingsForm
-                user={{
-                  id: user.id,
-                  displayName: user.displayName,
-                  email: user.email,
-                  phone: user.phone,
-                  avatarUrl: user.avatarUrl,
-                }}
-                hasMailbox={(user.mailboxes?.length ?? 0) > 0}
-              />
-            ) : (
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p>
-                  We could not find a matching database account for the current
-                  session.
-                </p>
-                <p>
-                  Session identity used for lookup:{" "}
-                  <span className="font-mono text-foreground">
-                    {userId ?? "no id"} / {email ?? "no email"}
-                  </span>
-                </p>
-                <p>
-                  If this is an Entra login, make sure the account exists in
-                  AppUsers and that the session email or id matches the stored
-                  record.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Left Column: Edit Profile & Active Sessions */}
+        <div className="space-y-6">
+          <Card className="  transition-all duration-300 bg-transparent backdrop-blur">
+            <CardHeader>
+              <CardTitle>Edit profile</CardTitle>
+              <CardDescription>
+                These are the profile fields that can be updated from your account
+                page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {user ? (
+                <AccountSettingsForm
+                  user={{
+                    id: user.id,
+                    displayName: user.displayName,
+                    email: user.email,
+                    phone: user.phone,
+                    avatarUrl: user.avatarUrl,
+                  }}
+                  hasMailbox={(user.mailboxes?.length ?? 0) > 0}
+                />
+              ) : (
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <p>
+                    We could not find a matching database account for the current
+                    session.
+                  </p>
+                  <p>
+                    Session identity used for lookup:{" "}
+                    <span className="font-mono text-foreground">
+                      {userId ?? "no id"} / {email ?? "no email"}
+                    </span>
+                  </p>
+                  <p>
+                    If this is an Entra login, make sure the account exists in
+                    AppUsers and that the session email or id matches the stored
+                    record.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <ActiveSessionsCard currentSessionId={currentSessionId} />
+        </div>
 
         {/* Sidebar */}
         <div className="space-y-6 background-transparent">

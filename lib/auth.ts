@@ -5,6 +5,9 @@ import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "@/lib/auth.config";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
+import { headers } from "next/headers";
+import crypto from "crypto";
+
 
 const LOG_PREFIX = "[auth.ts]";
 function log(msg: string, data?: unknown) {
@@ -171,6 +174,41 @@ async function syncEntraUser(profile: Record<string, unknown> | undefined) {
   });
 }
 
+// ─── Custom Session Helper ───────────────────────────────────────────────────
+
+async function createNewSession(userId: string) {
+  const COOKIE_VERSION = parseInt(process.env.COOKIE_VERSION || "1", 10);
+  let userAgent: string | null = null;
+  let ipAddress: string | null = null;
+  try {
+    const userHeaders = await headers();
+    userAgent = userHeaders.get("user-agent") || null;
+    ipAddress = userHeaders.get("x-forwarded-for")?.split(",")[0].trim() || userHeaders.get("x-real-ip") || null;
+  } catch (e) {
+    log("Could not read headers during session creation (expected outside request lifecycle)");
+  }
+
+  const sessionToken = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+  const sessionRecord = await prisma.userSession.create({
+    data: {
+      userId,
+      sessionToken,
+      userAgent,
+      ipAddress,
+      cookieVersion: COOKIE_VERSION,
+      expiresAt,
+    },
+  });
+
+  return {
+    sessionId: sessionRecord.sessionToken,
+    cookieVersion: COOKIE_VERSION,
+    lastVerified: Date.now(),
+  };
+}
+
 // ─── NextAuth config ───────────────────────────────────────────────────────────
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -247,6 +285,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.isEntraUser = syncedUser.isEntraUser;
           token.isOnboarded = syncedUser.onboarded;
 
+          // Register user session
+          try {
+            const sessionDetails = await createNewSession(syncedUser.id);
+            token.sessionId = sessionDetails.sessionId;
+            token.cookieVersion = sessionDetails.cookieVersion;
+            token.lastVerified = sessionDetails.lastVerified;
+            log(`Created new session ${sessionDetails.sessionId} for Entra login`);
+          } catch (err) {
+            logError("Failed to register session for Entra user during login", err);
+          }
+
           log(`Entra login complete for user ${syncedUser.id} — firing notification`);
           sendLoginNotification(syncedUser.id, "entra").catch((err) =>
             logError("Background notification failed (entra)", err),
@@ -275,12 +324,109 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.isActive = appUser.isActive;
           token.isEntraUser = appUser.isEntraUser;
           token.isOnboarded = appUser.onboarded;
+
+          // Register user session
+          try {
+            const sessionDetails = await createNewSession(appUser.id);
+            token.sessionId = sessionDetails.sessionId;
+            token.cookieVersion = sessionDetails.cookieVersion;
+            token.lastVerified = sessionDetails.lastVerified;
+            log(`Created new session ${sessionDetails.sessionId} for credentials login`);
+          } catch (err) {
+            logError("Failed to register session for credentials user during login", err);
+          }
+        }
+      }
+
+      // Subsequent verification flow
+      if (!user && token.sub) {
+        const COOKIE_VERSION = parseInt(process.env.COOKIE_VERSION || "1", 10);
+        
+        // 1. Check if token lacks session tracking or cookie version details
+        const tokenVersion = token.cookieVersion as number | undefined;
+        const sessionId = token.sessionId as string | undefined;
+        
+        const isOutdated = tokenVersion === undefined ? COOKIE_VERSION > 1 : tokenVersion !== COOKIE_VERSION;
+        
+        if (isOutdated) {
+          log(`Session version mismatch for user ${token.sub} (Token: ${tokenVersion}, Server: ${COOKIE_VERSION})`);
+          token.sub = undefined;
+          token.error = "InvalidCookieVersion";
+          return token;
+        }
+        
+        // 2. Migration path: If version matches but we don't have a sessionId (e.g. initial launch of version 1)
+        if (!sessionId) {
+          log(`Migrating old token without sessionId for user ${token.sub}`);
+          try {
+            const sessionDetails = await createNewSession(token.sub as string);
+            token.sessionId = sessionDetails.sessionId;
+            token.cookieVersion = sessionDetails.cookieVersion;
+            token.lastVerified = sessionDetails.lastVerified;
+          } catch (err) {
+            logError("Failed migrating old token to new session tracking", err);
+            // Don't invalidate yet to prevent breaking user session if DB write fails temporarily
+          }
+        } else {
+          // 3. Database check (checked on every request for immediate session revocation support)
+          log(`Checking session ${sessionId} in DB for user ${token.sub}`);
+          try {
+            const activeSession = await prisma.userSession.findUnique({
+            where: { sessionToken: sessionId },
+          });
+
+          if (!activeSession || activeSession.expiresAt < new Date()) {
+            log(`Session ${sessionId} is revoked or expired`);
+            // Invalidate the session by returning null, which will cause auth() to return null.
+            return null as any;
+          }  if (Date.now() - activeSession.lastActive.getTime() > 5 * 60 * 1000) {
+              await prisma.userSession.update({
+                where: { id: activeSession.id },
+                data: { lastActive: new Date() },
+              }).catch((err) => logError("Failed to update lastActive", err));
+            }
+          } catch (err) {
+            logError("Failed to query user session from database", err);
+            // Fail-secure or fail-open? In a typical app, we fail-open (allow the request)
+            // to prevent temporary DB glitches from logging everyone out.
+          }
         }
       }
 
       return token;
     },
     async session({ session, token }) {
+      if (!token.sub || token.error) {
+        log(`Session callback — session is invalid due to token.error: ${token.error}`);
+        return null as any;
+      }
+
+      // Check database to ensure session has not been revoked (runs on every server-side auth() call)
+      const sessionId = token.sessionId as string | undefined;
+      if (sessionId) {
+        try {
+          const activeSession = await prisma.userSession.findUnique({
+            where: { sessionToken: sessionId },
+          });
+
+          if (!activeSession || activeSession.expiresAt < new Date()) {
+            log(`Session callback — Session ${sessionId} is revoked or expired in DB`);
+            return null as any;
+          }
+
+          // Throttle lastActive update to every 5 minutes
+          if (Date.now() - activeSession.lastActive.getTime() > 5 * 60 * 1000) {
+            await prisma.userSession.update({
+              where: { id: activeSession.id },
+              data: { lastActive: new Date() },
+            }).catch((err) => logError("Failed to update lastActive in session callback", err));
+          }
+        } catch (err) {
+          logError("Failed to query user session in session callback", err);
+          // Fail-open for temporary database issues
+        }
+      }
+
       if (session.user) {
         const enrichedUser = session.user as any; 
 
@@ -301,9 +447,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (token.isActive !== undefined) enrichedUser.isActive = token.isActive;
         if (token.isEntraUser !== undefined) enrichedUser.isEntraUser = token.isEntraUser;
         if (token.isOnboarded !== undefined) enrichedUser.isOnboarded = token.isOnboarded;
+
+        // Pass sessionId to client side so we know which session is current
+        if (token.sessionId) enrichedUser.sessionId = token.sessionId;
       }
 
       return session;
     },
   },
+  events: {
+    async signOut(message) {
+      if ("token" in message && message.token?.sessionId) {
+        log(`Deleting session ${message.token.sessionId} on sign out`);
+        try {
+          await prisma.userSession.delete({
+            where: { sessionToken: message.token.sessionId as string },
+          });
+        } catch (err) {
+          logError("Failed to delete session on sign out", err);
+        }
+      }
+    }
+  }
 });
