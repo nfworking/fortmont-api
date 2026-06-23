@@ -44,7 +44,7 @@ export function ApplicationShell1({ className, children, user }: ApplicationShel
 
   return (
     <SidebarProvider
-      className={cn(className, "bg-transparent backdrop-blur ")}
+      className={cn(className, " bg-white dark:bg-black ")}
       style={
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -52,8 +52,8 @@ export function ApplicationShell1({ className, children, user }: ApplicationShel
         } as CSSProperties
       }
     >
-      <AppSidebar variant="inset" user={user ?? null} className="bg-transparent " />
-      <SidebarInset className="bg-transparent backdrop-blur">
+      <AppSidebar variant="inset" user={user ?? null} className=" bg-white dark:bg-black " />
+      <SidebarInset className=" bg-white dark:bg-black ">
         <SiteHeader title={title} />
         {children}
       </SidebarInset>

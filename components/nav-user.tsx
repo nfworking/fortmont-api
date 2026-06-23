@@ -36,7 +36,7 @@ export function NavUser() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative flex items-center   gap-2 rounded-full outline-none ring-offset-background transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="relative flex items-center gap-2 rounded-full outline-none ring-offset-background transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="Open user menu"
         >
           <Avatar className="h-8 w-8 rounded-full">
@@ -55,7 +55,7 @@ export function NavUser() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-56 rounded-xl border border-border/50 bg-transparent  backdrop-blur-md shadow-lg"
+        className="w-56 rounded-xl border dark:bg-black bg-white border-border/50 shadow-lg"
         align="end"
         sideOffset={8}
       >
@@ -72,10 +72,10 @@ export function NavUser() {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0">
-              <span className="truncate text-sm font-medium leading-tight">
+              <span className="truncate text-sm font-medium leading-tight dark:text-white text-black">
                 {effectiveUser.name}
               </span>
-              <span className="truncate text-xs text-muted-foreground leading-tight">
+              <span className="truncate text-xs leading-tight dark:text-white text-black">
                 {effectiveUser.email}
               </span>
             </div>

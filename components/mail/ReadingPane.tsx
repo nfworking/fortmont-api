@@ -119,15 +119,16 @@ export function ReadingPane({
               </span>
             </div>
 
-            <div className="flex-1 text-sm text-foreground/90 leading-relaxed font-sans min-h-[200px]">
+            {/* FIXED: Cleaned layout container colors */}
+            <div className="flex-1 text-sm text-foreground leading-relaxed font-sans min-h-[200px]">
               {selectedEmail.body.html && typeof selectedEmail.body.html === "string" ? (
                 <div 
-                  className="bg-card text-card-foreground p-6 rounded-lg border border-border/50 shadow-sm max-w-none break-words email-body-html" 
+                  className="p-6 rounded-lg border border-border/50 bg-card shadow-sm max-w-none break-words email-body-html" 
                   dangerouslySetInnerHTML={{ __html: selectedEmail.body.html }} 
                 />
               ) : (
-                <div className="bg-card text-card-foreground p-6 rounded-lg border border-border/50 shadow-sm">
-                  <pre className="white-space-pre-wrap font-sans text-xs leading-relaxed break-words text-foreground/95">
+                <div className="bg-card p-6 rounded-lg border border-border/50 shadow-sm text-foreground">
+                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed break-words">
                     {selectedEmail.body.text || "No content"}
                   </pre>
                 </div>
@@ -145,7 +146,7 @@ export function ReadingPane({
                   placeholder={`Reply ${selectedName}…`}
                   disabled={sending}
                   rows={3}
-                  className="min-h-16 max-h-48 text-xs bg-transparent border-none focus-visible:ring-0 p-0 resize-none shadow-none focus-visible:border-none focus-visible:outline-none"
+                  className="min-h-16 max-h-48 text-xs bg-transparent border-none focus-visible:ring-0 p-0 resize-none shadow-none focus-visible:border-none focus-visible:outline-none text-foreground"
                 />
 
                 {sendError && (
@@ -199,13 +200,20 @@ export function ReadingPane({
           <div className="text-xs font-medium text-muted-foreground/70">Select an email to read</div>
         </div>
       )}
+      
       <style>{`
+        .email-body-html {
+          color: hsl(var(--foreground));
+        }
+        .email-body-html * {
+          color: inherit !important;
+        }
         .email-body-html img {
           max-width: 100%;
           height: auto;
         }
         .email-body-html a {
-          color: var(--primary);
+          color: hsl(var(--primary)) !important;
           text-decoration: underline;
         }
       `}</style>

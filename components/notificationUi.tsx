@@ -131,8 +131,8 @@ function NotificationItem({
   return (
     <div
       className={cn(
-        "group relative flex gap-3 px-4 py-3 transition-colors hover:bg-zinc-800/60",
-        !notification.read && "bg-zinc-800/30"
+        "group relative flex gap-3 px-4 py-3 transition-colors ",
+        !notification.read && "dark:bg-black bg-white "
       )}
     >
       <div
@@ -146,7 +146,7 @@ function NotificationItem({
 
       <div className="flex-1 space-y-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium leading-none text-zinc-100">
+          <p className="text-sm font-medium leading-none text-black dark:text-white">
             {notification.title}
           </p>
           {!notification.read && (
@@ -284,7 +284,7 @@ export function NotificationPanel() {
         <Button
           variant="outline"
           size="icon"
-          className="relative border-zinc-800 bg-transparent backdrop-blur text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+          className="relative text-black bg-white dark:bg-black dark:text-white hover:dark:bg-zinc-800 hover:text-zinc-800"
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
@@ -297,13 +297,13 @@ export function NotificationPanel() {
 
       <PopoverContent
         align="end"
-        className="w-80 border-zinc-800 bg-background/50 backdrop-blur p-0 text-zinc-100 sm:w-96"
+        className="w-80 border-zinc-800 bg-white dark:bg-black p-0 text-black dark:text-white sm:w-96"
       >
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold">Notifications</h4>
             {unreadCount > 0 && (
-              <span className="rounded-full bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-400">
+              <span className="rounded-full bg-white px-1.5 py-0.5 text-xs text-black dark:bg-black dark:text-white">
                 {unreadCount} new
               </span>
             )}
@@ -312,7 +312,7 @@ export function NotificationPanel() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 gap-1 text-xs text-zinc-400 hover:text-zinc-100"
+              className="h-7 gap-1 text-xs dark:text-white text-black hover:text-zinc-100"
               onClick={markAllAsRead}
             >
               <CheckCheck className="h-3.5 w-3.5" />
@@ -324,14 +324,13 @@ export function NotificationPanel() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 gap-1 text-xs text-zinc-400 hover:text-zinc-100"
+          className="h-7 gap-1 text-xs dark:text-white text-black "
           onClick={() => window.location.href = "/admin_ticketing"} 
         >
           <ArrowUpAZ className="h-3.5 w-3.5" />
           View all notifications
         </Button>
 
-        <Separator className="bg-zinc-800" />
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center">
@@ -352,7 +351,7 @@ export function NotificationPanel() {
           </div>
         ) : notifications.length > 0 ? (
           <ScrollArea className="h-96">
-            <div className="divide-y divide-zinc-800">
+            <div className="divide-y ">
               {notifications.map((notification) => (
                 <NotificationItem
                   key={notification.id}
@@ -365,10 +364,10 @@ export function NotificationPanel() {
           </ScrollArea>
         ) : (
           <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800">
-              <KeyRound className="h-5 w-5 text-zinc-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-black">
+              <KeyRound className="h-5 w-5 dark:text-white bg-white dark:bg-black" />
             </div>
-            <p className="text-sm font-medium text-zinc-300">All caught up</p>
+            <p className="text-sm font-medium dark:text-white text-black">All caught up</p>
             <p className="text-xs text-zinc-500">
               You have no new notifications.
             </p>

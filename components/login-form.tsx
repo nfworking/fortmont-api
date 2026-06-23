@@ -68,9 +68,9 @@ export function LoginForm({
   };
 
   return (
-    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleLogin} {...props}>
+    <form className={cn("flex flex-col gap-6 bg-white dark:bg-black", className)} onSubmit={handleLogin} {...props}>
       <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
+        <div className="flex flex-col items-center gap-1 text-center dark:text-white">
           <h1 className="text-2xl font-bold">Login to your account</h1>
           <p className="text-sm text-balance text-muted-foreground">
             Enter your username below to login to your account

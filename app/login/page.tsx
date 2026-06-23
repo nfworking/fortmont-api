@@ -27,7 +27,7 @@ export default async function LoginPage({
 </video>
 
       {/* Dark Overlay */}
-      <div className="absolute inset-0 backdrop-blur" />
+      <div className="absolute inset-0 backdrop-blur " />
 
       {/* Content */}
       <div className="relative z-10 flex min-h-svh items-center justify-center p-6">
@@ -40,7 +40,7 @@ export default async function LoginPage({
               ortmont Web
             </a>
           </div>
-         <div className="rounded-xl border bg-background/30 backdrop-blur-md p-6 shadow-xl">
+         <div className="rounded-xl border bg-white dark:bg-black p-6 shadow-xl">
           <LoginForm callbackUrl={params?.callbackUrl ?? "/dashboard"} />
           </div>
         </div>
