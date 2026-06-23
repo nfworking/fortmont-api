@@ -48,6 +48,7 @@ model AppUsers {
   files               File[]
   storage             UserStorage?
   fileActivities      FileActivity[]
+  pendingUploads      PendingUpload[]
 }
 
 model GitHubLink {
@@ -284,5 +285,21 @@ model FileActivity {
   createdAt DateTime @default(now())
 
   @@index([fileId])
+  @@index([userId])
+}
+
+model PendingUpload {
+  id        String  @id @default(uuid())
+  userId    String
+  objectKey String  @unique
+  fileName  String
+  fileSize  BigInt
+  mimeType  String?
+  ticketId  String?
+
+  createdAt DateTime @default(now())
+
+  user AppUsers @relation(fields: [userId], references: [id])
+
   @@index([userId])
 }

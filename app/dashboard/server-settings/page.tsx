@@ -15,36 +15,99 @@ export default function UploadPage() {
   };
 
   const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
+  e.preventDefault();
 
-    setUploading(true);
-    setMessage("");
+  if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("ticketId", ""); 
+  setUploading(true);
+  setMessage("");
 
-    try {
-      const res = await fetch("/api/storage/upload", {
+  try {
+    // Step 1 - Request upload URL
+    const uploadUrlRes = await fetch(
+      "/api/storage/upload-url",
+      {
         method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setMessage(`Success! Stored in SeaweedFS with key: ${data.file.objectKey}`);
-        setFile(null);
-      } else {
-        setMessage(`Upload failure: ${data.error}`);
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          ticketId: null,
+        }),
       }
-    } catch (err) {
-      setMessage("An unexpected error occurred during client-side transit.");
-    } finally {
-      setUploading(false);
+    );
+
+    const uploadData = await uploadUrlRes.json();
+
+    if (!uploadUrlRes.ok) {
+      throw new Error(
+        uploadData.error ??
+        "Failed to obtain upload URL"
+      );
     }
-  };
+
+    // Step 2 - Upload directly to SeaweedFS
+    const seaweedRes = await fetch(uploadData.uploadUrl, {
+  method: "PUT",
+  body: file,
+});
+
+if (!seaweedRes.ok) {
+  const text = await seaweedRes.text();
+
+  console.error("SeaweedFS response:", text);
+
+  throw new Error(
+    `SeaweedFS upload failed: ${seaweedRes.status}`
+  );
+}
+
+    // Step 3 - Finalize upload
+    const completeRes = await fetch(
+      "/api/storage/complete-upload",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          uploadId:
+            uploadData.uploadId,
+        }),
+      }
+    );
+
+    const completeData =
+      await completeRes.json();
+
+    if (!completeRes.ok) {
+      throw new Error(
+        completeData.error ??
+        "Upload finalization failed"
+      );
+    }
+
+    setMessage(
+      `Upload complete. File ID: ${completeData.fileId}`
+    );
+
+    setFile(null);
+  } catch (error) {
+    console.error(error);
+
+    setMessage(
+      error instanceof Error
+        ? error.message
+        : "Unexpected upload error"
+    );
+  } finally {
+    setUploading(false);
+  }
+};
 
   return (
     <div style={{ padding: "2rem", maxWidth: "400px", margin: "0 auto" }}>
