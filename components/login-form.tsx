@@ -93,6 +93,12 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
   };
 
   const handleEntraLogin = async () => {
+    setIsSplashing(true);
+    setTimeout(() => cycleStep(1), 3000);
+    setTimeout(() => cycleStep(2), 6500);
+    setTimeout(() => cycleStep(3), 9500);
+
+  await new Promise((resolve) => setTimeout(resolve, 12000));
     try {
       setIsLoading2(true);
       setError(null);
@@ -141,7 +147,7 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
             <h2 className="text-xl font-medium text-white mb-1">
               {loadingSteps[loadingStep].title}
             </h2>
-            <p style={{ fontSize: 13, color: "#555", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "#ffffff", margin: 0 }}>
               {loadingSteps[loadingStep].sub}
             </p>
           </div>

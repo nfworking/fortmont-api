@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HardDrive, LayoutDashboard, Files } from "lucide-react";
+import { StorageWidget } from "@/components/dashboard_res/storage";
 
 import {
   Sidebar,
@@ -19,9 +20,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const items = [
- 
   { title: "My Storage", url: "/dashboard/account/storage", icon: LayoutDashboard },
-{ title: "Files", url: "/my-storage", icon: Files },
+  { title: "Files", url: "/my-storage", icon: Files },
 ];
 
 interface SidebarAccount {
@@ -33,9 +33,11 @@ interface SidebarAccount {
 
 interface AppSidebarProps {
   account: SidebarAccount | null;
+  usedBytes: number;  // Passed down as a safe number or string
+  quotaBytes: number;
 }
 
-export function AppSidebar({ account }: AppSidebarProps) {
+export function AppSidebar({ account, usedBytes, quotaBytes }: AppSidebarProps) {
   const pathname = usePathname();
 
   const name = account?.displayName || account?.username || "Guest";
@@ -79,7 +81,12 @@ export function AppSidebar({ account }: AppSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="flex items-center gap-2 px-1 py-1.5">
+        <div className="w-full px-2"> {/* Cleaned up width class */}
+          {/* Convert back to BigInt if your StorageWidget explicitly requires it */}
+          <StorageWidget usedBytes={BigInt(usedBytes)} quotaBytes={BigInt(quotaBytes)} />
+        </div>
+        
+        <div className="flex items-center justify-center gap-2 px-1 py-1.5 mb-10">
           <Avatar className="h-8 w-8 shrink-0 rounded-md">
             {account?.avatarUrl ? (
               <AvatarImage src={account.avatarUrl} alt={name} />

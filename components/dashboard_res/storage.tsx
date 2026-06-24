@@ -60,14 +60,19 @@ useEffect(() => {
   </div>
 
       {/* Status */}
-      {percent >= 90 && (
+      {percent >= 99 && (
+        <div className="text-xs text-red-500">
+          Storage full, please upgrade or delete files
+        </div>
+      )}
+      {percent >= 90 && percent < 99 && (
         <div className="text-xs text-red-500">
           Storage almost full
         </div>
       )}
       {percent >= 70 && percent < 90 && (
         <div className="text-xs text-yellow-600">
-          Storage getting high
+          Storage getting full, consider cleaning up
         </div>
       )}
     </div>

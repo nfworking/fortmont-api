@@ -25,6 +25,7 @@ export async function AppShell({
           displayName: true,
           email: true,
           avatarUrl: true,
+          storage: true,
         },
       })
     : null;
@@ -32,7 +33,7 @@ export async function AppShell({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar account={account} />
+        <AppSidebar account={account} usedBytes={Number(account?.storage?.usedBytes || 0)} quotaBytes={Number(account?.storage?.quotaBytes || 0)} />
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur">
             <SidebarTrigger className="-ml-1" />

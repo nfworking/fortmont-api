@@ -41,6 +41,7 @@ import {
   getFileExtension,
   type StorageFile,
 } from "@/lib/storage";
+import { useRouter } from "next/navigation";
 
 type SortKey = "name" | "size";
 
@@ -53,8 +54,36 @@ async function handleDownload(file: StorageFile) {
     });
   }
 }
+ 
+const deleteFile = async (fileId: string) => {
+  // Implement file deletion logic here, e.g., call an API route to delete the file
+  // For now, we'll just show a toast message
+  await fetch(`/api/storage/delete/file/${fileId}`, {
+    method: "DELETE",
+    credentials: "include",
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error("Failed to delete file");
+    }
+  }).catch((error) => {
+    toast.error("Failed to delete file", {
+      description: "An error occurred while trying to delete the file.",
+    });
+  });
+}
+
+
 
 function FileActions({ file }: { file: StorageFile }) {
+    const router = useRouter();
+    const handleDelete = async (fileId: string) => {
+  await deleteFile(fileId);
+ 
+  
+  router.refresh(); 
+  toast.success("File deleted ");
+}
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -76,6 +105,11 @@ function FileActions({ file }: { file: StorageFile }) {
         >
           <Copy className="h-4 w-4" />
           Copy file ID
+        </DropdownMenuItem>
+        <DropdownMenuItem className="hover:bg-destructive/100"     
+          onClick={() => handleDelete(file.id)}
+        >
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
