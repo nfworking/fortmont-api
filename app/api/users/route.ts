@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
+import {decode} from "next-auth/jwt"; // Added decode to read mobile tokens
 import { auth } from "@/lib/auth";
 
 export const runtime = "nodejs";
+const AUTH_JWT_SALT = "authjs.session-token";
 
 function sanitizeAppUser(user: any) {
   if (!user) return user;
   
-  // Clone the object to prevent mutation side-effects if necessary
   const sanitized = { ...user };
 
   if (sanitized.storage) {
@@ -28,7 +29,6 @@ function sanitizeAppUser(user: any) {
   return sanitized;
 }
 
-// Reusable select block to avoid duplication between findUnique and findMany
 const userSelectFields = {
   id: true,
   username: true,
@@ -91,9 +91,42 @@ const userSelectFields = {
 
 export async function GET(req: Request) {
   try {
-    const session = await auth();
+    let authenticatedUserId: string | undefined;
 
-    if (!session || !session.user?.id) {
+    // 1. TRY MOBILE AUTHENTICATION FIRST (Bearer Token)
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+      const authSecret = process.env.AUTH_SECRET;
+
+      if (authSecret) {
+        try {
+          const decoded: any = await decode({
+            token,
+            secret: authSecret,
+            salt: AUTH_JWT_SALT,
+          });
+
+          if (decoded && decoded.sub) {
+            authenticatedUserId = decoded.sub;
+          }
+        } catch (error) {
+          console.error("Failed to decode mobile token:", error);
+          return Response.json({ error: "Invalid mobile token" }, { status: 401 });
+        }
+      }
+    }
+
+    // 2. FALLBACK TO WEB AUTHENTICATION (Cookies via auth())
+    if (!authenticatedUserId) {
+      const session = await auth();
+      if (session?.user?.id) {
+        authenticatedUserId = session.user.id;
+      }
+    }
+
+    // 3. REJECT IF NEITHER AUTH METHOD PROVIDED A USER ID
+    if (!authenticatedUserId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -109,9 +142,9 @@ export async function GET(req: Request) {
       const sanitizedUsers = users.map(user => sanitizeAppUser(user));
       return Response.json(sanitizedUsers);
     } else {
-      // Fetch the single authenticated user
+      // Fetch the single authenticated user using our resolved token identity
       const user = await prisma.appUsers.findUnique({
-        where: { id: session.user.id },
+        where: { id: authenticatedUserId },
         select: userSelectFields,
       });
 
