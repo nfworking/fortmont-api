@@ -10,6 +10,7 @@ type Props = {
 };
 
 export function StorageWidget({ usedBytes, quotaBytes }: Props) {
+
   if (usedBytes == null || quotaBytes == null) {
     return (
 
@@ -33,7 +34,7 @@ useEffect(() => {
 }, [percent]); 
 
   return (
-    <div className="rounded-xl border p-4 space-y-3">
+    <div className="rounded-xl border p-4 space-y-3 transition-all duration-500">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-medium">Storage</h3>
@@ -44,6 +45,7 @@ useEffect(() => {
         <Button variant="outline" size="sm" onClick={() => toast.info("Storage upgrade coming soon!")}>
           Upgrade
         </Button>
+        
       </div>
 
       {/* Usage */}
