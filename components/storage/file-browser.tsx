@@ -36,7 +36,7 @@ import { FileTypeIcon } from "@/components/storage/file-icon";
 import { UploadDialog } from "@/components/storage/upload-dialog";
 import { cn } from "@/lib/utils";
 import {
-  downloadFile,
+ 
   formatBytes,
   getFileExtension,
   type StorageFile,
@@ -44,6 +44,28 @@ import {
 import { useRouter } from "next/navigation";
 
 type SortKey = "name" | "size";
+
+export async function getDownloadUrl(fileId: string): Promise<string> {
+  const res = await fetch(
+    `/api/storage/download?fileId=${encodeURIComponent(fileId)}`,
+    { credentials: "include" },
+  );
+  const data = await res.json();
+  const url = data.downloadUrl ?? data.url;
+  if (!url) throw new Error("No download URL returned");
+  return url;
+}
+
+export async function downloadFile(file: StorageFile): Promise<void> {
+  const url = await getDownloadUrl(file.id);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = file.name;
+  anchor.rel = "noopener";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+}
 
 async function handleDownload(file: StorageFile) {
   try {
@@ -77,7 +99,7 @@ const deleteFile = async (fileId: string) => {
 function FileActions({ file }: { file: StorageFile }) {
     const router = useRouter();
     const handleDelete = async (fileId: string) => {
-  await deleteFile(fileId);
+    await deleteFile(fileId);
  
   
   router.refresh(); 
