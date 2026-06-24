@@ -4,11 +4,68 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { SettingsSection } from "@/components/account/Settingssection";
 import { ShieldAlert } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
+import { FormEvent } from "react";
+import { signOut, useSession } from "next-auth/react"
 
-export function SecuritySection() {
+import { toast } from "sonner";
+
+
+export default function SecuritySection() {
+  
+
+  const handlePasswordChange = async (
+  event: FormEvent<HTMLFormElement>
+) => {
+  event.preventDefault();
+
+  const formData = new FormData(event.currentTarget);
+
+  const currentPassword = String(
+    formData.get("currentPassword") ?? ""
+  );
+
+  const newPassword = String(
+    formData.get("newPassword") ?? ""
+  );
+
+  const confirmPassword = String(
+    formData.get("confirmPassword") ?? ""
+  );
+  
+
+  if (newPassword !== confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
+
+
+  const response = await fetch("/api/account/update-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      currentPassword,
+      newPassword,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error ?? "Failed to update password");
+  }
+
+  toast.success("Password updated successfully. Please log in again.");
+  await signOut({ redirect: true, callbackUrl: "/login?callbackurl=%2Fplatform%2Faccount%3Fsection%3Dsecurity" });
+  
+};
+
   return (
     <div className="flex flex-col gap-8">
       {/* ── Change password ── */}
@@ -19,6 +76,7 @@ export function SecuritySection() {
       >
         <Card className="bg-background/35 backdrop-blur-md border-border/60">
           <CardContent className="pt-6 space-y-4">
+            <form onSubmit={handlePasswordChange} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="current-password" className="text-xs text-muted-foreground">
                 Current password
@@ -28,6 +86,7 @@ export function SecuritySection() {
                 type="password"
                 placeholder="••••••••••••"
                 className="bg-background/50"
+                name="currentPassword"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -40,6 +99,7 @@ export function SecuritySection() {
                   type="password"
                   placeholder="••••••••••••"
                   className="bg-background/50"
+                  name="newPassword"
                 />
               </div>
               <div className="space-y-1.5">
@@ -51,6 +111,7 @@ export function SecuritySection() {
                   type="password"
                   placeholder="••••••••••••"
                   className="bg-background/50"
+                  name="confirmPassword"
                 />
               </div>
             </div>
@@ -58,6 +119,7 @@ export function SecuritySection() {
             <div className="flex justify-end pt-2">
               <Button size="sm">Update password</Button>
             </div>
+            </form>
           </CardContent>
         </Card>
       </SettingsSection>

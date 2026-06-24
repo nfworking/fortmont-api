@@ -20,7 +20,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const items = [
-  { title: "My Storage", url: "/dashboard/account/storage", icon: LayoutDashboard },
+  { title: "My Storage", url: "/platform/account?section=storage-acc", icon: LayoutDashboard },
   { title: "Files", url: "/my-storage", icon: Files },
 ];
 

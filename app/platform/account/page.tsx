@@ -10,7 +10,7 @@ import Link from "next/link"
 
 import { AccountSettingsSidebar } from "@/components/account/Accountsettingssidebar";
 import { ProfileSection } from "@/components/account/Profilesection";
-import { SecuritySection } from "@/components/account/Securitysection";
+import  SecuritySection  from "@/components/account/Securitysection";
 import { AccountSection } from "@/components/account/Accountsection";
 import { MailboxesSection } from "@/components/account/Mailboxessection";
 import { DevicesSection } from "@/components/account/Devicessection";
@@ -21,7 +21,7 @@ import DashboardPage from "@/components/account/StoragePage"
 import {ThemeToggle} from "@/components/theme-toggle";
 import {Layout, ArrowUpRightFromSquare} from "lucide-react"
 import { Button } from "@/components/ui/button";
-import { UploadPartRequest$ } from "@aws-sdk/client-s3";
+
 
 export const metadata: Metadata = {
   title: "Fortmont · Account",
