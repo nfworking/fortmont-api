@@ -1,6 +1,4 @@
-// app/api/github/callback/route.ts
-// GitHub redirects here after the user authorizes. Exchanges the code for a token,
-// fetches the GitHub user profile, and saves/updates the record in the DB.
+
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -8,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
-  const state = searchParams.get("state"); // This is the userId we passed in connect/route.ts
+  const state = searchParams.get("state"); 
 
   if (!code || !state) {
     return NextResponse.json(
@@ -17,7 +15,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // 1. Exchange the code for an access token
+ 
   const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
@@ -85,6 +83,6 @@ export async function GET(req: NextRequest) {
 
   // 4. Redirect back to your settings/integrations page on success
   return NextResponse.redirect(
-    `${process.env.NEXTAUTH_URL}/settings/integrations?github=linked`
+    `https://api.fortmont.me/platform/account?section=github&linked=github`
   );
 }

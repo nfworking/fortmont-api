@@ -40,8 +40,12 @@ import {
   formatBytes,
   getFileExtension,
   type StorageFile,
+  isVideo,
+  isImage,
 } from "@/lib/storage";
 import { useRouter } from "next/navigation";
+import {VideoPlayerDialog} from "./video-player";
+import { useSignedUrl } from "@/hooks/use-signed-url";
 
 type SortKey = "name" | "size";
 
@@ -78,8 +82,7 @@ async function handleDownload(file: StorageFile) {
 }
  
 const deleteFile = async (fileId: string) => {
-  // Implement file deletion logic here, e.g., call an API route to delete the file
-  // For now, we'll just show a toast message
+
   await fetch(`/api/storage/delete/file/${fileId}`, {
     method: "DELETE",
     credentials: "include",
@@ -140,13 +143,27 @@ function FileActions({ file }: { file: StorageFile }) {
 
 function FileCard({ file }: { file: StorageFile }) {
   const ext = getFileExtension(file.name);
+  const image = isImage(file.name);
+  const video = isVideo(file.name);
+    const { url: imgUrl } = useSignedUrl(file.id, image);
   return (
     <div className="group relative flex flex-col rounded-lg border bg-card p-4 transition-colors hover:border-foreground/30">
       <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
         <FileActions file={file} />
       </div>
-      <div className="mb-4 flex aspect-square w-full items-center justify-center rounded-md bg-secondary">
-        <FileTypeIcon name={file.name} className="h-9 w-9 text-foreground/80" />
+      <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-md bg-secondary">
+        {image && imgUrl ? (
+          <img
+            src={imgUrl}
+            alt={file.name}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <FileTypeIcon name={file.name} className="h-9 w-9 text-foreground/80" />
+          </div>
+        )}
+        {video && <VideoPlayerDialog file={file} />}
       </div>
       <p className="truncate text-sm font-medium" title={file.name}>
         {file.name}

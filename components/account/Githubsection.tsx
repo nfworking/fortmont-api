@@ -1,3 +1,8 @@
+"use client";
+
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner"; 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,11 +13,61 @@ import type { AccountGitHubLink } from "./types";
 
 interface GitHubSectionProps {
   githubLink: AccountGitHubLink[] | null | undefined;
-  formatDate: (d: Date) => string;
 }
 
-export function GitHubSection({ githubLink, formatDate }: GitHubSectionProps) {
+export function GitHubSection({ githubLink }: GitHubSectionProps) {
   const linked = githubLink?.[0];
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const section = searchParams.get("section");
+    const status = searchParams.get("linked");
+
+    if (section === "github" && status === "github") {
+      toast.success("GitHub Account Connected", {
+        description: "Your commit activity and statistics are now syncing.",
+      });
+
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("section");
+      params.delete("linked");
+      
+      const newQuery = params.toString();
+      const newPath = window.location.pathname + (newQuery ? `?${newQuery}` : "");
+      
+      router.replace(newPath, { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  const formatGitHubDate = (dateInput: Date | string) => {
+    if (!dateInput) return "Unknown";
+    return new Date(dateInput).toLocaleDateString("en-AU", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const handleUnlink = async () => {
+    try {
+      const res = await fetch("/api/github/disconnect", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        toast.success("GitHub disconnected successfully");
+        window.location.reload();
+      } else {
+        toast.error("Failed to unlink GitHub account");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred during disconnection");
+    }
+  };
 
   return (
     <SettingsSection
@@ -43,7 +98,7 @@ export function GitHubSection({ githubLink, formatDate }: GitHubSectionProps) {
                   value={linked.scope ?? "Not recorded"}
                   mono
                 />
-                <DetailRow label="Linked at" value={formatDate(linked.linkedAt)} />
+                <DetailRow label="Linked at" value={formatGitHubDate(linked.linkedAt)} />
               </div>
 
               <Separator className="opacity-50" />
@@ -57,6 +112,7 @@ export function GitHubSection({ githubLink, formatDate }: GitHubSectionProps) {
                   variant="ghost"
                   size="sm"
                   className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={handleUnlink}
                 >
                   <Unlink className="h-3.5 w-3.5" />
                   Unlink account
@@ -75,9 +131,11 @@ export function GitHubSection({ githubLink, formatDate }: GitHubSectionProps) {
                   stats in your Fortmont dashboard.
                 </p>
               </div>
-              <Button size="sm" className="mt-1 gap-1.5">
-                <LinkIcon className="h-3.5 w-3.5" />
-                Connect GitHub
+              <Button size="sm" className="mt-1 gap-1.5" asChild>
+                <a href="/api/github/connect">
+                  <LinkIcon className="h-3.5 w-3.5" />
+                  Connect GitHub
+                </a>
               </Button>
             </div>
           )}

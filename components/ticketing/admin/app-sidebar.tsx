@@ -33,7 +33,7 @@ const data = {
     },
     {
       title: "Request Forms",
-      url: "/admin_ticketing/requests",
+      url: "/admin_ticketing/dashboard/forms",
       icon: (
         <MailIcon
         />

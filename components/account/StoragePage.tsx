@@ -98,6 +98,7 @@ export default async function DashboardPage() {
           owner: { select: { id: true, username: true } },
         },
       },
+      _count: {select: { files: true }},
     },
   });
 
@@ -127,7 +128,7 @@ export default async function DashboardPage() {
           />
           <StatCard
             label="Total files"
-            value={String(files.length)}
+            value={String(user?._count.files ?? 0)}
             icon={Files}
           />
           <StatCard

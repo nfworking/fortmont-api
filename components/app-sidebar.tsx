@@ -85,12 +85,17 @@ const data = {
       title: "My Github",
       url: "/dashboard/mygithub",
       icon: <GitFork />,
-      requiresGithub: true, // Tagging this route to intercept it
+      requiresGithub: true, 
     },
     {
       title: "My Storage",
       url: "/my-storage",
       icon: <Database />,
+    },
+    {
+      title: "Tickets",
+      url: "/admin_ticketing/dashboard",
+      icon: <CommandIcon />,
     },
     {
       title: "Webmail",
@@ -112,13 +117,13 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
     avatar?: string | null
     isGithubLinked?: boolean | null
   } | null
-  isGithubLinked?: boolean // Added prop to verify GitHub link status
+  isGithubLinked?: boolean 
 }
 
 export function AppSidebar({ user, isGithubLinked = false, ...props }: AppSidebarProps) {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 
-  // Intercept the nav items rendering
+
   const modifiedNavMain = data.navMain.map((item) => {
     const hasGithub = isGithubLinked || (user as any)?.isGithubLinked || (user as any)?.githubLinked;
 
@@ -156,14 +161,14 @@ export function AppSidebar({ user, isGithubLinked = false, ...props }: AppSideba
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          {/* Pass the modified navigation array down to NavMain */}
+         
           <NavMain items={modifiedNavMain} />
         </SidebarContent>
         <SidebarFooter />
         <SidebarRail />
       </Sidebar>
 
-      {/* Intercept Alert Dialog Box */}
+
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader className="flex flex-col items-center gap-2 text-center">

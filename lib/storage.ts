@@ -1,14 +1,3 @@
-// Storage API client. All requests are same-origin and rely on the
-// cookie session issued by the backend, so every call uses
-// `credentials: "include"`.
-//
-// Endpoint contract (implemented on the backend):
-//   GET  /api/users                     -> account + files (session required)
-//   POST /api/storage/upload-url        -> { uploadUrl, uploadId }
-//   PUT  <uploadUrl>                    -> raw file body to SeaweedFS
-//   POST /api/storage/complete-upload   -> { fileId }
-//   GET  /api/storage/download-url      -> { downloadUrl } (presigned S3 GET)
-
 export interface FileOwner {
   id: string;
   username: string;
@@ -183,4 +172,15 @@ export function getFileExtension(name: string): string {
 
 export function getFileCategory(name: string): FileCategory {
   return EXT_MAP[getFileExtension(name)] ?? "other";
+}
+
+const VIDEO_EXTS = ["mp4", "webm", "mov", "mkv"];
+
+export function isVideo(name: string) {
+  return VIDEO_EXTS.includes(getFileExtension(name).toLowerCase());
+}
+const IMAGE_EXTS = ["jpg", "jpeg", "png", "gif", "webp", "avif"];
+
+export function isImage(name: string) {
+  return IMAGE_EXTS.includes(getFileExtension(name).toLowerCase());
 }

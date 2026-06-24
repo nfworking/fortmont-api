@@ -31,7 +31,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -50,7 +49,6 @@ function getInitials(value: string | null | undefined) {
     .toUpperCase();
 }
 
-// ─── Section router ──────────────────────────────────────────────────────────
 
 type SectionKey =
   | "profile"
@@ -80,9 +78,7 @@ function resolveSection(raw: string | string[] | undefined): SectionKey {
   return VALID_SECTIONS.has(s as SectionKey) ? (s as SectionKey) : "profile";
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────
 
-// Next.js 15 type definitions expect searchParams to be a Promise
 interface PageProps {
   searchParams: Promise<{ section?: string | string[] }>;
 }
@@ -90,7 +86,6 @@ interface PageProps {
 export default async function AccountPage({
   searchParams,
 }: PageProps): Promise<React.ReactElement> {
-  // 1. Await searchParams before reading from it
   const resolvedSearchParams = await searchParams;
 
   const session = await auth();
@@ -159,13 +154,11 @@ export default async function AccountPage({
     },
   });
 
-  // 2. Pass the un-wrapped object to your resolve helper
   const activeSection = resolveSection(resolvedSearchParams.section);
   const initials = getInitials(
     user?.displayName ?? user?.username ?? user?.email ?? sessionUser.name,
   );
 
-  // ── Section content ────────────────────────────────────────────────────────
 
   function renderSection() {
     switch (activeSection) {
@@ -196,7 +189,7 @@ export default async function AccountPage({
         return (
           <GitHubSection
             githubLink={user?.githubLink}
-            formatDate={formatDate}
+            
           />
         );
 
@@ -209,12 +202,10 @@ export default async function AccountPage({
     }
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <main className="flex flex-1 flex-col gap-0 p-4 md:p-6">
         
-      {/* Page header */}
       <div className="mb-10 space-y-1">
         <div className="flex justify-end">
         <ThemeToggle />
@@ -232,10 +223,9 @@ export default async function AccountPage({
         <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
       </div>
 
-      {/* Two-column layout: sticky sidebar + scrollable content */}
+     
       <div className="flex gap-8 items-start">
-        {/* Sidebar nav — needs useSearchParams so it lives in a Client Component.
-            Wrapping in Suspense satisfies Next.js's static generation requirement. */}
+
         <Suspense fallback={null}>
           <AccountSettingsSidebar
             displayName={user?.displayName ?? sessionUser.name}
@@ -246,7 +236,6 @@ export default async function AccountPage({
           />
         </Suspense>
 
-        {/* Main content — fills remaining width */}
         <div className="min-w-0 flex-1">{renderSection()}</div>
       </div>
     </main>
