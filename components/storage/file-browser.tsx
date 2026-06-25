@@ -45,6 +45,7 @@ import {
 } from "@/lib/storage";
 import { useRouter } from "next/navigation";
 import {VideoPlayerDialog} from "./video-player";
+import { PhotoViewerDialog } from "./photo-viewer";
 import { useSignedUrl } from "@/hooks/use-signed-url";
 
 type SortKey = "name" | "size";
@@ -145,19 +146,24 @@ function FileCard({ file }: { file: StorageFile }) {
   const ext = getFileExtension(file.name);
   const image = isImage(file.name);
   const video = isVideo(file.name);
-    const { url: imgUrl } = useSignedUrl(file.id, image);
+  const { url: imgUrl } = useSignedUrl(file.id, image);
+
   return (
     <div className="group relative flex flex-col rounded-lg border bg-card p-4 transition-colors hover:border-foreground/30">
       <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
         <FileActions file={file} />
       </div>
+      
       <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-md bg-secondary">
         {image && imgUrl ? (
-          <img
-            src={imgUrl}
-            alt={file.name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+          <>
+            <img
+              src={imgUrl}
+              alt={file.name}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <PhotoViewerDialog file={file} />
+          </>
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <FileTypeIcon name={file.name} className="h-9 w-9 text-foreground/80" />
@@ -165,9 +171,11 @@ function FileCard({ file }: { file: StorageFile }) {
         )}
         {video && <VideoPlayerDialog file={file} />}
       </div>
+
       <p className="truncate text-sm font-medium" title={file.name}>
         {file.name}
       </p>
+      
       <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
         <span className="font-mono uppercase">{ext || "file"}</span>
         <span className="font-mono">{formatBytes(file.size)}</span>

@@ -1,17 +1,16 @@
-// components/storage/video-player-dialog.tsx
+// components/storage/photo-viewer-dialog.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Play, Download, X, Volume2, Maximize2 } from "lucide-react";
+import { X, Download, ZoomIn, ZoomOut } from "lucide-react";
 import { useSignedUrl } from "@/hooks/use-signed-url";
-import { formatBytes } from "@/lib/storage";
+import { formatBytes, getFileExtension } from "@/lib/storage";
 import type { StorageFile } from "@/lib/storage";
 
-export function VideoPlayerDialog({ file }: { file: StorageFile }) {
+export function PhotoViewerDialog({ file }: { file: StorageFile }) {
   const [open, setOpen] = useState(false);
-  const { url, loading } = useSignedUrl(file.id, open);
   const [visible, setVisible] = useState(false); // controls CSS animation class
-
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [zoomed, setZoomed] = useState(false);
+  const { url, loading } = useSignedUrl(file.id, open);
 
   const openDialog = () => {
     setOpen(true);
@@ -24,78 +23,114 @@ export function VideoPlayerDialog({ file }: { file: StorageFile }) {
     // unmount after animation completes
     setTimeout(() => {
       setOpen(false);
+      setZoomed(false);
     }, 200);
   };
-  // Lock body scroll when open
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
-      // Pause video when closed
-      videoRef.current?.pause();
     }
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const handler = (e: KeyboardEvent) => e.key === "Escape" && closeDialog();
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [open]);
 
+  const ext = getFileExtension(file.name).toUpperCase();
+
   return (
     <>
-      {/* Play button overlay on the card */}
       <button
         onClick={(e) => { e.stopPropagation(); openDialog(); }}
         className="absolute inset-0 flex items-center justify-center
-                   bg-black/50 opacity-0 group-hover:opacity-100
+                   bg-black/40 opacity-0 group-hover:opacity-100
                    transition-opacity duration-200 rounded-md"
-        aria-label={`Play ${file.name}`}
+        aria-label={`View ${file.name}`}
       >
         <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-lg">
-          <Play className="h-5 w-5 fill-black text-black translate-x-0.5" />
+          <ZoomIn className="h-5 w-5 text-black" />
         </div>
       </button>
 
-      {/* Portal-style backdrop */}
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
-          style={{ background: "rgba(0,0,0,0.85)" }}
-          onClick={() => closeDialog()}
+          style={{
+            background: "rgba(0,0,0,0.9)",
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.2s ease",
+          }}
+          onClick={closeDialog}
         >
-          {/* Dialog panel */}
           <div
-            className="relative w-full max-w-3xl"
             style={{
+              width: "100%",
+              maxWidth: "56rem",
               background: "#0a0a0a",
               borderRadius: "16px",
               border: "0.5px solid rgba(255,255,255,0.08)",
               overflow: "hidden",
-              animation: "vp-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+              transform: visible ? "scale(1) translateY(0)" : "scale(0.94) translateY(12px)",
+              opacity: visible ? 1 : 0,
+              transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
-            <button
-              onClick={() => closeDialog()}
-              className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-              style={{ background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.7)" }}
-              aria-label="Close"
+            {/* Top bar */}
+            <div
+              className="flex items-center justify-between px-4 py-2.5"
+              style={{ borderBottom: "0.5px solid rgba(255,255,255,0.07)" }}
             >
-              <X className="h-4 w-4" />
-            </button>
+              <p
+                className="truncate text-sm font-medium"
+                style={{ color: "rgba(255,255,255,0.8)" }}
+                title={file.name}
+              >
+                {file.name}
+              </p>
+              <div className="flex shrink-0 items-center gap-1 pl-4">
+                <button
+                  onClick={() => setZoomed((z) => !z)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                  aria-label={zoomed ? "Zoom out" : "Zoom in"}
+                >
+                  {zoomed ? <ZoomOut className="h-4 w-4" /> : <ZoomIn className="h-4 w-4" />}
+                </button>
+                <button
+                  onClick={closeDialog}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
 
-            {/* Video */}
-            <div className="relative w-full" style={{ background: "#000", aspectRatio: "16/9" }}>
+            {/* Image area */}
+            <div
+              className="relative flex items-center justify-center"
+              style={{
+                background: "#000",
+                minHeight: "320px",
+                maxHeight: "70vh",
+                overflow: zoomed ? "auto" : "hidden",
+                cursor: zoomed ? "zoom-out" : "zoom-in",
+              }}
+              onClick={() => setZoomed((z) => !z)}
+            >
               {loading || !url ? (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3 py-20">
                   {loading ? (
-                    <div className="flex flex-col items-center gap-3">
+                    <>
                       <div
                         className="h-8 w-8 rounded-full border-2 border-white/20 border-t-white/80"
                         style={{ animation: "spin 0.7s linear infinite" }}
@@ -103,21 +138,25 @@ export function VideoPlayerDialog({ file }: { file: StorageFile }) {
                       <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
                         Loading…
                       </span>
-                    </div>
+                    </>
                   ) : (
                     <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      Failed to load video
+                      Failed to load image
                     </p>
                   )}
                 </div>
               ) : (
-                <video
-                  ref={videoRef}
+                <img
                   src={url}
-                  controls
-                  autoPlay
-                  className="h-full w-full"
-                  style={{ display: "block" }}
+                  alt={file.name}
+                  style={{
+                    display: "block",
+                    maxHeight: zoomed ? "none" : "70vh",
+                    width: zoomed ? "auto" : "100%",
+                    objectFit: zoomed ? "none" : "contain",
+                    transition: "transform 0.2s ease",
+                  }}
+                  draggable={false}
                 />
               )}
             </div>
@@ -132,18 +171,14 @@ export function VideoPlayerDialog({ file }: { file: StorageFile }) {
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                   style={{ background: "rgba(255,255,255,0.06)" }}
                 >
-                  <Play className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.5)" }} />
+                  <ZoomIn className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.5)" }} />
                 </div>
                 <div className="min-w-0">
-                  <p
-                    className="truncate text-sm font-medium"
-                    style={{ color: "#fff" }}
-                    title={file.name}
-                  >
+                  <p className="truncate text-sm font-medium" style={{ color: "#fff" }} title={file.name}>
                     {file.name}
                   </p>
                   <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    {formatBytes(file.size)} · MP4
+                    {formatBytes(file.size)} · {ext}
                   </p>
                 </div>
               </div>
@@ -157,6 +192,7 @@ export function VideoPlayerDialog({ file }: { file: StorageFile }) {
                     background: "rgba(255,255,255,0.06)",
                     color: "rgba(255,255,255,0.7)",
                   }}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <Download className="h-3.5 w-3.5" />
                   Download
@@ -166,6 +202,10 @@ export function VideoPlayerDialog({ file }: { file: StorageFile }) {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </>
-    );
+  );
 }

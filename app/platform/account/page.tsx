@@ -10,7 +10,7 @@ import Link from "next/link"
 
 import { AccountSettingsSidebar } from "@/components/account/Accountsettingssidebar";
 import { ProfileSection } from "@/components/account/Profilesection";
-import  SecuritySection  from "@/components/account/Securitysection";
+import SecuritySection from "@/components/account/Securitysection";
 import { AccountSection } from "@/components/account/Accountsection";
 import { MailboxesSection } from "@/components/account/Mailboxessection";
 import { DevicesSection } from "@/components/account/Devicessection";
@@ -18,9 +18,10 @@ import { GitHubSection } from "@/components/account/Githubsection";
 import { StorageSection } from "@/components/account/Storagesection";
 import { SessionsSection } from "@/components/account/Sessionsection";
 import DashboardPage from "@/components/account/StoragePage"
-import {ThemeToggle} from "@/components/theme-toggle";
-import {Layout, ArrowUpRightFromSquare} from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Layout, ArrowUpRightFromSquare } from "lucide-react"
 import { Button } from "@/components/ui/button";
+import { NoAvailableToEntraUsers } from "@/components/account/NoAvaiabletoEntraUsers"
 
 
 export const metadata: Metadata = {
@@ -176,7 +177,17 @@ export default async function AccountPage({
       case "account":
         return <AccountSection />;
 
+
       case "security":
+        if (user?.isEntraUser) {
+
+
+
+
+          return <NoAvailableToEntraUsers />;
+        }
+
+        // Only accessible if they are NOT an Entra user
         return <SecuritySection />;
 
       case "mailboxes":
@@ -189,7 +200,7 @@ export default async function AccountPage({
         return (
           <GitHubSection
             githubLink={user?.githubLink}
-            
+
           />
         );
 
@@ -205,17 +216,17 @@ export default async function AccountPage({
 
   return (
     <main className="flex flex-1 flex-col gap-0 p-4 md:p-6">
-        
+
       <div className="mb-10 space-y-1">
         <div className="flex justify-end">
-        <ThemeToggle />
-        <Button variant="outline" size="sm" className="gap-1.5 ml-2" asChild>
-      <Link href="/dashboard">
-        <Layout className="h-3.5 w-3.5" />
-        Return to dashboard
-        <ArrowUpRightFromSquare className="h-3.5 w-3.5" />
-      </Link>
-    </Button>
+          <ThemeToggle />
+          <Button variant="outline" size="sm" className="gap-1.5 ml-2" asChild>
+            <Link href="/dashboard">
+              <Layout className="h-3.5 w-3.5" />
+              Return to dashboard
+              <ArrowUpRightFromSquare className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Settings
@@ -223,7 +234,7 @@ export default async function AccountPage({
         <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
       </div>
 
-     
+
       <div className="flex gap-8 items-start">
 
         <Suspense fallback={null}>

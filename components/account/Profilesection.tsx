@@ -41,12 +41,11 @@ export function ProfileSection({
               <div className="relative group cursor-pointer">
                 <Avatar className="h-16 w-16 rounded-2xl">
                   <AvatarImage
-                    src={user?.avatarUrl ?? undefined}
+                    src={user?.avatarUrl ?? "/defaults/profile_default.jpg"}
                     alt={user?.displayName ?? "Account"}
                   />
-                  <AvatarFallback className="rounded-2xl text-lg">
-                    {initials || "U"}
-                  </AvatarFallback>
+                 
+                    
                 </Avatar>
                 <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                   <Upload className="h-4 w-4 text-white" />

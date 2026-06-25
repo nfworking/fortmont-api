@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 
   // FIXED: Evaluates isAdmin cleanly based on your role check logic
   // (Note: Make sure to fill in your admin criteria, e.g., userRole === "admin")
-  const isAdmin = userRole === "admin" || userRole === ""; 
+  const isAdmin = userRole === "admin" || userRole === "ticket_admin"; 
 
   // 4. FETCH TICKETS
   const tickets = await prisma.tickets.findMany({

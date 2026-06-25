@@ -2,6 +2,8 @@
 import { auth } from "@/lib/auth";
 import {SessionProvider} from "next-auth/react"
 import {ThemeToggle} from "@/components/theme-toggle";
+import { Toaster } from "@/components/ui/sonner";
+
 
 export default async function DashboardLayout({
   children,
@@ -12,13 +14,15 @@ export default async function DashboardLayout({
   return (
 
       <div className="relative min-h-screen w-full">
+       
             <SessionProvider session={session}>
-   
+      
        {children}
 
-   
+      
      
       </SessionProvider>
+      
     </div>
     
   );

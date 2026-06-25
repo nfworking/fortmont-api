@@ -24,7 +24,7 @@ model AppUsers {
   displayName  String?
   email        String?  @unique
   role         String?
-  avatarUrl    String?
+  avatarUrl    String?  @default("/defaults/profile_default.jpg")
   phone        String?
   isEntraUser  Boolean? @default(false)
   passwordHash String
