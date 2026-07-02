@@ -10,6 +10,7 @@ export const authConfig: NextAuthConfig = {
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
+        otpCode: { label: "Verification code", type: "text" },
       },
       authorize: () => null, // real logic stays in auth.ts
     }),

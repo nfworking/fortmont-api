@@ -33,6 +33,10 @@ model AppUsers {
   updatedAt    DateTime @updatedAt
   onboarded    Boolean? @default(false)
   lastLoggedIn DateTime @default(now())
+  twoFactorEnabled           Boolean @default(false)
+  twoFactorMethod            String  @default("email")
+  twoFactorTotpSecret        String?
+  twoFactorPendingTotpSecret String?
 
   // RELATIONS
   mailboxes           UserMailbox[]
@@ -50,6 +54,7 @@ model AppUsers {
   storage             UserStorage?
   fileActivities      FileActivity[]
   pendingUploads      PendingUpload[]
+  oneTimePassword     OneTimePassword?
 }
 
 model GitHubLink {
@@ -325,4 +330,17 @@ model PendingUpload {
   user AppUsers @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+// One-Time Password for Two-Factor Authentication
+model OneTimePassword {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  codeHash     String    @unique
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  user        AppUsers  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("one_time_passwords")
 }

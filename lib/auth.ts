@@ -5,6 +5,7 @@ import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "@/lib/auth.config";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
+import { verifyTwoFactorCode } from "@/lib/two-factor";
 import { headers } from "next/headers";
 import crypto from "crypto";
 
@@ -232,7 +233,7 @@ export async function createNewSession(userId: string) {
     const userHeaders = await headers();
     userAgent = userHeaders.get("user-agent") || null;
     ipAddress = userHeaders.get("x-forwarded-for")?.split(",")[0].trim() || userHeaders.get("x-real-ip") || null;
-  } catch (e) {
+  } catch {
     log("Could not read headers during session creation (expected outside request lifecycle)");
   }
 
@@ -275,6 +276,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
+        otpCode: { label: "Verification code", type: "text" },
       },
       async authorize(credentials) {
         log("Credentials authorize() called");
@@ -284,6 +286,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             : "";
         const password =
           typeof credentials?.password === "string" ? credentials.password : "";
+        const otpCode =
+          typeof credentials?.otpCode === "string" ? credentials.otpCode : "";
 
         log(`Attempting credentials login for username: "${username}"`);
 
@@ -299,6 +303,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!verifyPassword(password, appUser.passwordHash)) {
           log(`Password verification failed for user ${appUser.id}`);
           return null;
+        }
+
+        if (appUser.twoFactorEnabled) {
+          const isOtpValid = await verifyTwoFactorCode(appUser.id, otpCode);
+          if (!isOtpValid) {
+            log(`Two-factor verification failed for user ${appUser.id}`);
+            return null;
+          }
         }
 
         log(`Credentials login successful for user ${appUser.id} — firing notification`);
@@ -415,7 +427,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!activeSession || activeSession.expiresAt < new Date()) {
             log(`Session ${sessionId} is revoked or expired`);
             // Invalidate the session by returning null, which will cause auth() to return null.
-            return null as any;
+            return null as unknown as typeof token;
           }  if (Date.now() - activeSession.lastActive.getTime() > 5 * 60 * 1000) {
               await prisma.userSession.update({
                 where: { id: activeSession.id },
@@ -445,7 +457,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (!token.sub || token.error) {
         log(`Session callback — session is invalid due to token.error: ${token.error}`);
-        return null as any;
+        return null as unknown as typeof session;
       }
 
       // Check database to ensure session has not been revoked (runs on every server-side auth() call)
@@ -458,7 +470,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           if (!activeSession || activeSession.expiresAt < new Date()) {
             log(`Session callback — Session ${sessionId} is revoked or expired in DB`);
-            return null as any;
+            return null as unknown as typeof session;
           }
 
           // Throttle lastActive update to every 5 minutes
@@ -475,7 +487,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       if (session.user) {
-        const enrichedUser = session.user as any; 
+        const enrichedUser = session.user as unknown as Record<string, unknown>; 
 
         // Always copy strings safely if they exist
         if (token.name) session.user.name = token.name as string;

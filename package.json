@@ -1,13 +1,13 @@
 {
   "name": "fortmontapi",
-  "version": "2.19.2",
+  "version": "2.21.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "docker:build": "docker build -t fortmontapi:2.19.2 .",
-    "docker:tag": "docker tag fortmontapi:2.19.2 172.20.0.18:5000/fortmontapi:2.19.2",
-    "docker:push": "docker push 172.20.0.18:5000/fortmontapi:2.19.2 ",
+    "docker:build": "docker build -t fortmontapi:2.21.0 .",
+    "docker:tag": "docker tag fortmontapi:2.21.0 172.20.0.18:5000/fortmontapi:2.21.0",
+    "docker:push": "docker push 172.20.0.18:5000/fortmontapi:2.21.0 ",
     "start": "next start",
     "lint": "eslint"
   },
@@ -42,6 +42,7 @@
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.4.6",
     "nodemailer": "^8.0.10",
+    "qrcode": "^1.5.4",
     "radix-ui": "^1.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -65,6 +66,7 @@
     "@types/mailparser": "^3.4.6",
     "@types/node": "^20",
     "@types/nodemailer": "^8.0.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.184.1",

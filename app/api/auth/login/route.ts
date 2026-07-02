@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
 // 1. IMPORT your session creator helper directly from auth.ts
 import { createNewSession } from "@/lib/auth"; 
+import { sendTwoFactorCode, verifyTwoFactorCode } from "@/lib/two-factor";
 
 export const runtime = "nodejs";
 
@@ -62,6 +63,12 @@ export async function POST(request: NextRequest) {
     typeof (body as { password?: unknown }).password === "string"
       ? (body as { password: string }).password
       : "";
+  const otpCode =
+    typeof body === "object" &&
+    body !== null &&
+    typeof (body as { otpCode?: unknown }).otpCode === "string"
+      ? (body as { otpCode: string }).otpCode
+      : "";
 
   log(`Resolved identifier: "${identifier}", password provided: ${!!password}`);
 
@@ -84,6 +91,8 @@ export async function POST(request: NextRequest) {
       role: true,
       phone: true,
       avatarUrl: true,
+      twoFactorEnabled: true,
+      twoFactorMethod: true,
     },
   });
 
@@ -101,6 +110,44 @@ export async function POST(request: NextRequest) {
   const passwordMatches = verifyPassword(password, user.passwordHash);
   if (!passwordMatches) {
     return createLoginError("Invalid username/email or password", 401);
+  }
+
+  if (user.twoFactorEnabled) {
+    if (!user.email) {
+      return createLoginError("Two-factor authentication is not configured correctly", 400);
+    }
+
+    if (!otpCode && user.twoFactorMethod === "email") {
+      await sendTwoFactorCode({
+        userId: user.id,
+        email: user.email,
+        username: user.username,
+      });
+
+      return Response.json(
+        {
+          requiresTwoFactor: true,
+          method: "email",
+          maskedEmail: maskEmail(user.email),
+        },
+        { status: 202 },
+      );
+    }
+
+    if (!otpCode) {
+      return Response.json(
+        {
+          requiresTwoFactor: true,
+          method: user.twoFactorMethod,
+        },
+        { status: 202 },
+      );
+    }
+
+    const isOtpValid = await verifyTwoFactorCode(user.id, otpCode);
+    if (!isOtpValid) {
+      return createLoginError("Invalid or expired verification code", 401);
+    }
   }
 
   log(`Updating lastLoggedIn for user: ${user.id}`);
@@ -152,7 +199,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (userDevices.length > 0) {
-      let admin = (await import("@/lib/firebaseAdmin")).default;
+      const admin = (await import("@/lib/firebaseAdmin")).default;
       const notificationPayload = {
         notification: {
           title: "New Mobile Login",
@@ -191,4 +238,12 @@ export async function POST(request: NextRequest) {
     },
     { status: 200 },
   );
+}
+
+function maskEmail(email: string) {
+  const [name, domain] = email.split("@");
+  if (!domain) return email;
+
+  const maskedName = name.length <= 2 ? `${name[0] ?? ""}***` : `${name.slice(0, 2)}***`;
+  return `${maskedName}@${domain}`;
 }

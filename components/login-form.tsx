@@ -46,6 +46,10 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
   const [stepVisible, setStepVisible] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [twoFactorPending, setTwoFactorPending] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<"email" | "authenticator">("email");
+  const [maskedEmail, setMaskedEmail] = useState<string | null>(null);
   const [error, setError]       = useState<string | null>(null);
   const router = useRouter();
 
@@ -63,15 +67,45 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
       setIsLoading(true);
       setError(null);
 
+      if (!twoFactorPending) {
+        const twoFactorResponse = await fetch("/api/auth/2fa/start", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        });
+
+        const twoFactorData = await twoFactorResponse.json();
+
+        if (!twoFactorResponse.ok) {
+          setError(twoFactorData.error ?? "Invalid username or password.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (twoFactorData.requiresTwoFactor) {
+          setTwoFactorPending(true);
+          setTwoFactorMethod(twoFactorData.method === "authenticator" ? "authenticator" : "email");
+          setMaskedEmail(twoFactorData.maskedEmail ?? null);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const result = await signIn("credentials", {
         username,
         password,
+        otpCode: twoFactorPending ? otpCode : undefined,
         redirect: false,
         callbackUrl,
       });
 
       if (result?.error) {
-        setError("Invalid username or password.");
+        setError(twoFactorPending ? "Invalid or expired verification code." : "Invalid username or password.");
         setIsLoading(false);
         return;
       }
@@ -89,6 +123,37 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
       setError("An unexpected error occurred.");
       setIsLoading(false);
       setIsSplashing(false);
+    }
+  };
+
+  const resendTwoFactorCode = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/2fa/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error ?? "Could not send a new code.");
+        return;
+      }
+
+      setMaskedEmail(data.maskedEmail ?? maskedEmail);
+      setOtpCode("");
+    } catch {
+      setError("Could not send a new code.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -210,6 +275,7 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
             autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            disabled={twoFactorPending}
           />
         </Field>
         <Field>
@@ -228,12 +294,46 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={twoFactorPending}
           />
         </Field>
+        {twoFactorPending && (
+          <Field>
+            <div className="flex items-center">
+              <FieldLabel htmlFor="otp-code">Verification code</FieldLabel>
+              <button
+                type="button"
+                onClick={resendTwoFactorCode}
+                disabled={isLoading || twoFactorMethod !== "email"}
+                className="ml-auto text-sm underline-offset-4 hover:underline disabled:opacity-50"
+              >
+                Resend code
+              </button>
+            </div>
+            <Input
+              id="otp-code"
+              name="otpCode"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={6}
+              required
+              className="bg-background"
+              autoComplete="one-time-code"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            />
+            <FieldDescription>
+              {twoFactorMethod === "authenticator"
+                ? "Enter the 6-digit code from your authenticator app."
+                : `Enter the 6-digit code sent to ${maskedEmail ?? "your email"}.`}
+            </FieldDescription>
+          </Field>
+        )}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Field>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Login"}
+            {isLoading ? "Signing in..." : twoFactorPending ? "Verify and login" : "Login"}
           </Button>
         </Field>
         <FieldSeparator>continue with</FieldSeparator>
