@@ -8,8 +8,59 @@ import { Separator } from "@/components/ui/separator";
 import { SettingsSection } from "@/components/account/Settingssection";
 import { Trash2 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+
 export function AccountSection() {
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to permanently delete your account? This action cannot be undone.")) {
+      return;
+    }
+    try {
+      const res = await fetch("/api/users", { method: "DELETE", credentials: "include" });
+      if (res.ok) {
+        // After deletion, redirect to home or login page
+        router.push("/");
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete account");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while deleting the account.");
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const res = await fetch("/api/users/export", { method: "GET", credentials: "include" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to export data");
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition");
+      let filename = "data.json";
+      if (disposition) {
+        const match = disposition.match(/filename="?([^\"]+)"?/);
+        if (match && match[1]) filename = match[1];
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while exporting data.");
+    }
+  };
+
   return (
+
     <div className="flex flex-col gap-8">
       {/* ── Preferences ── */}
       <SettingsSection
@@ -69,8 +120,11 @@ export function AccountSection() {
                   including mailboxes, device tokens, and audit history. This action
                   is irreversible and requires administrator approval.
                 </p>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="sm" onClick={handleDelete}>
                   Delete my account
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleExport} className="ml-2">
+                  Export my data
                 </Button>
               </div>
             </div>

@@ -84,8 +84,8 @@ model Notifications {
 
   createdAt DateTime @default(now())
   read      Boolean? @default(false)
-  userId    String
-  user      AppUsers @relation(fields: [userId], references: [id])
+  userId    String?
+  user      AppUsers? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 // PASSWORD RESET FOR USERS

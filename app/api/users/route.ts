@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
+import { NextResponse } from "next/server";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "@/lib/s3";
 import {decode} from "next-auth/jwt"; // Added decode to read mobile tokens
 import { auth } from "@/lib/auth";
+
+const BUCKET_NAME = process.env.S3_BUCKET!;
 
 export const runtime = "nodejs";
 const AUTH_JWT_SALT = "authjs.session-token";
@@ -227,3 +232,44 @@ export async function POST(req: Request) {
 
   return Response.json(createdUser, { status: 201 });
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
+    // Fetch all files belonging to the user
+    const userFiles = await prisma.file.findMany({
+      where: { ownerId: userId },
+      select: { id: true, objectKey: true, size: true },
+    });
+
+    // Delete each file from S3
+    for (const file of userFiles) {
+      await s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: file.objectKey,
+        })
+      );
+    }
+
+    // Transaction: delete file records, reset storage, delete user
+    await prisma.$transaction([
+      prisma.file.deleteMany({ where: { ownerId: userId } }),
+      prisma.userStorage.update({
+        where: { userId },
+        data: { usedBytes: 0 },
+      }),
+      prisma.appUsers.delete({ where: { id: userId } }),
+    ]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("User deletion failed:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

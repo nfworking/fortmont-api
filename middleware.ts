@@ -30,7 +30,7 @@ function redirectToLogin(req: NextRequest) {
 }
 
 // Common public frontend routes. No need to list "/api/..." routes here.
-const publicRoutes = ["/apps", "/forgot-password", "/reset-password", "/onboard"];
+const publicRoutes = ["/apps", "/forgot-password", "/reset-password", "/onboard", "/privacy-policy", "/terms-of-service"];
 const authPages = ["/login", "/login_webmail", "/signup"];
 
 export default auth(async (req) => {

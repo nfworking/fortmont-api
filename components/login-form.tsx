@@ -348,6 +348,11 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
             Don&apos;t have an account?{" "}
             <a href="/signup" className="underline underline-offset-4">Signup</a>
           </FieldDescription>
+          <div className="text-center text-xs text-muted-foreground mt-2 space-x-2">
+            <a href="/privacy-policy" className="underline underline-offset-4 hover:text-foreground">Privacy Policy</a>
+            <span>&middot;</span>
+            <a href="/terms-of-service" className="underline underline-offset-4 hover:text-foreground">Terms of Service</a>
+          </div>
         </Field>
       </FieldGroup>
     </form>
