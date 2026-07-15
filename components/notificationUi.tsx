@@ -204,12 +204,6 @@ export function NotificationPanel() {
         credentials: "include",
       });
 
-      if (res.status === 401) {
-        // Wipes Chrome application cookies instantly and handles the visual redirect
-        await signOut({ redirectTo: "/login" });
-        return;
-      }
-
       // Explicitly type the incoming API response data here
       const data: ApiNotification[] = await res.json();
 

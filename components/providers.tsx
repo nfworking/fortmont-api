@@ -6,6 +6,7 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import {SessionGuard} from "@/components/session-guard";
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ type ProvidersProps = {
 export function Providers({ children, session }: ProvidersProps) {
   return (
     <SessionProvider session={session}>
+      <SessionGuard />
       <TooltipProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <Toaster richColors closeButton />
