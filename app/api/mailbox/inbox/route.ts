@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/mailboxPassword";
 import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // 1. Auth
-    const session = await auth();
+    const actor = await resolveTicketingActor(request);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = actor.userId;
 
     // 2. Get mailbox
     const mailbox = await prisma.userMailbox.findFirst({

@@ -2,32 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getToken } from "next-auth/jwt";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    let sessionUser = (await auth())?.user as { id?: string; role?: string } | undefined;
-    
-      if (!sessionUser ) {
-        const token = await getToken({ 
-          req: request, 
-          secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET 
-        });
-        
-        if (token) {
-          sessionUser = {
-            id: token.sub, // NextAuth maps the user ID to the 'sub' field in JWTs
-           
-          };
-        }
-      }
-    
-      if (!sessionUser || !sessionUser.id) {
+    const actor = await resolveTicketingActor(request);
+
+      if (!actor?.userId) {
         return createError("Unauthorized", 401);
       }
 
-    const userId = sessionUser.id;
+    const userId = actor.userId;
 
     const body = await request.json();
 

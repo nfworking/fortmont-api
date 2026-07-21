@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { addMinutes } from 'date-fns';
-import { auth } from '@/lib/auth';
 import {
   appendQueryToUri,
   createOAuthErrorRedirect,
@@ -9,6 +8,7 @@ import {
   parseScopeList,
 } from '@/lib/oauth';
 import { prisma } from '@/lib/prisma';
+import { resolveTicketingActor } from '@/lib/ticketing-auth';
 
 type ConsentBody = {
   action?: 'approve' | 'deny';
@@ -26,8 +26,8 @@ type ConsentBody = {
  * Accepts application/json or form-urlencoded.
  */
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const actor = await resolveTicketingActor(request);
+  if (!actor?.userId) {
     return NextResponse.json({ error: 'login_required' }, { status: 401 });
   }
 
@@ -139,7 +139,7 @@ export async function POST(request: Request) {
     data: {
       code,
       clientId: client.id,
-      userId: session.user.id,
+      userId: actor.userId,
       redirectUri,
       scopes: grantedScopes,
       codeChallenge: codeChallenge || undefined,

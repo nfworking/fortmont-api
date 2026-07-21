@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
 import {
@@ -10,6 +9,7 @@ import {
   createAuthenticatorSetup,
   sendTwoFactorCode,
 } from "@/lib/two-factor";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1),
@@ -21,13 +21,10 @@ const verifySchema = z.object({
   method: z.enum(["email", "authenticator"]).default("email"),
 });
 
-async function getSessionUserId() {
-  const session = await auth();
-  return session?.user?.id ?? null;
-}
+export async function GET(request: NextRequest) {
+  const actor = await resolveTicketingActor(request);
+  const userId = actor?.userId;
 
-export async function GET() {
-  const userId = await getSessionUserId();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -65,7 +62,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const actor = await resolveTicketingActor(request);
+  const userId = actor?.userId;
+
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -133,7 +132,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const actor = await resolveTicketingActor(request);
+  const userId = actor?.userId;
+
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -166,7 +167,9 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const actor = await resolveTicketingActor(request);
+  const userId = actor?.userId;
+
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

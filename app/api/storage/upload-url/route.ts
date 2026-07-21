@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { s3Client } from "@/lib/s3";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 import crypto from "crypto";
 
@@ -12,9 +12,9 @@ const BUCKET_NAME = process.env.S3_BUCKET!;
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const actor = await resolveTicketingActor(req);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -32,11 +32,11 @@ export async function POST(req: Request) {
 
     const storage = await prisma.userStorage.upsert({
       where: {
-        userId: session.user.id,
+        userId: actor.userId,
       },
       update: {},
       create: {
-        userId: session.user.id,
+        userId: actor.userId,
       },
     });
 
@@ -58,12 +58,12 @@ export async function POST(req: Request) {
     const fileUuid = crypto.randomUUID();
 
     const objectKey =
-      `uploads/${session.user.id}/${fileUuid}-${fileName}`;
+      `uploads/${actor.userId}/${fileUuid}-${fileName}`;
 
     const pendingUpload =
       await prisma.pendingUpload.create({
         data: {
-          userId: session.user.id,
+          userId: actor.userId,
           objectKey,
           fileName,
           fileSize: fileSizeBigInt,

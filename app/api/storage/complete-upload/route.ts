@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { s3Client } from "@/lib/s3";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 import {
   HeadObjectCommand,
@@ -11,9 +11,9 @@ const BUCKET_NAME = process.env.S3_BUCKET!;
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const actor = await resolveTicketingActor(req);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     if (
       pending.userId !==
-      session.user.id
+      actor.userId
     ) {
       return NextResponse.json(
         {

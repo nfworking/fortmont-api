@@ -3,18 +3,18 @@
 // Use this on your settings page to show whether the account is connected.
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
-export async function GET() {
-  const session = await auth();
+export async function GET(request: Request) {
+  const actor = await resolveTicketingActor(request);
 
-  if (!session?.user?.id) {
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const link = await prisma.gitHubLink.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: actor.userId },
     select: {
       username: true,
       avatarUrl: true,

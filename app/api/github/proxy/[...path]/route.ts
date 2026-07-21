@@ -4,22 +4,22 @@
 //                           GET /api/github/proxy/repos/owner/repo/issues
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 async function handler(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const session = await auth();
+  const actor = await resolveTicketingActor(req);
 
-  if (!session?.user?.id) {
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Look up the stored GitHub token for this user
   const link = await prisma.gitHubLink.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: actor.userId },
     select: { accessToken: true },
   });
 

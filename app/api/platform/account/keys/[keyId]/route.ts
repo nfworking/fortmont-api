@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export const runtime = "nodejs";
 
@@ -14,9 +14,9 @@ export async function DELETE(
   { params }: Context,
 ) {
   try {
-    const session = await auth();
+    const actor = await resolveTicketingActor(_req);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -28,7 +28,7 @@ export async function DELETE(
       select: { id: true, userId: true },
     });
 
-    if (!existingKey || existingKey.userId !== session.user.id) {
+    if (!existingKey || existingKey.userId !== actor.userId) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 

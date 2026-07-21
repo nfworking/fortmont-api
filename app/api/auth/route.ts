@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getToken } from "next-auth/jwt";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export const runtime = "nodejs";
 
@@ -24,26 +23,11 @@ function createError(message: string, status: number) {
 }
 
 export async function PATCH(request: NextRequest) {
-  // 2. Try fetching the cookie session first, fall back to parsing the Bearer Token header
-  let sessionUser = (await auth())?.user as { id?: string; role?: string } | undefined;
+  const actor = await resolveTicketingActor(request);
 
-  if (!sessionUser) {
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET 
-    });
-    
-    if (token) {
-      sessionUser = {
-        id: token.sub, // NextAuth maps the user ID to the 'sub' field in JWTs
-        role: (token.role as string) || "user",
-      };
-    }
-  }
-
-  if (sessionUser?.id) {
+  if (actor?.userId) {
     const currentUser = await prisma.appUsers.findUnique({
-      where: { id: sessionUser.id },
+      where: { id: actor.userId },
       select: { role: true, isActive: true },
     });
 
@@ -51,10 +35,10 @@ export async function PATCH(request: NextRequest) {
       return createError("Unauthorized", 401);
     }
 
-    sessionUser.role = currentUser.role || sessionUser.role || "user";
+    actor.userRole = currentUser.role || actor.userRole || "user";
   }
 
-  if (!sessionUser || !sessionUser.id) {
+  if (!actor?.userId) {
     return createError("Unauthorized", 401);
   }
 
@@ -70,10 +54,10 @@ export async function PATCH(request: NextRequest) {
     return createError("Request body must be an object", 400);
   }
 
-  const requestedUserId = request.nextUrl.searchParams.get("id") ?? sessionUser.id;
-  const isAdmin = sessionUser.role === "admin";
+  const requestedUserId = request.nextUrl.searchParams.get("id") ?? actor.userId;
+  const isAdmin = actor.userRole === "admin";
 
-  if (requestedUserId !== sessionUser.id && !isAdmin) {
+  if (requestedUserId !== actor.userId && !isAdmin) {
     return createError("Forbidden", 403);
   }
 

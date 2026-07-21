@@ -1,13 +1,13 @@
-import {prisma} from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import {hashPassword, verifyPassword} from "@/lib/password";
+import { prisma } from "@/lib/prisma";
+import { hashPassword, verifyPassword } from "@/lib/password";
 import { NextRequest, NextResponse } from "next/server";
 import { revokeUserSessions } from "@/lib/auth";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const actor = await resolveTicketingActor(req);
+    if (!actor?.userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await prisma.appUsers.findUnique({
-      where: { id: session.user.id },
+      where: { id: actor.userId },
       select: { passwordHash: true },
     });
     
@@ -47,11 +47,11 @@ export async function POST(req: NextRequest) {
     const newPasswordHash = await hashPassword(newPassword);
 
     await prisma.appUsers.update({
-      where: { id: session.user.id },
+      where: { id: actor.userId },
       data: { passwordHash: newPasswordHash },
     });
 
-    await revokeUserSessions(session.user.id);
+    await revokeUserSessions(actor.userId);
     
     return NextResponse.json({ message: "Password updated successfully" });
   } catch (error) {

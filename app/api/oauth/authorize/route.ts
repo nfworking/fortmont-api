@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import {
   createOAuthErrorRedirect,
   getOAuthBaseUrl,
@@ -7,6 +6,7 @@ import {
   parseScopeList,
 } from '@/lib/oauth';
 import { prisma } from '@/lib/prisma';
+import { resolveTicketingActor } from '@/lib/ticketing-auth';
 
 /**
  * Authorization endpoint (OAuth 2.0 / OIDC).
@@ -110,9 +110,9 @@ export async function GET(request: Request) {
     );
   }
 
-  const session = await auth();
+  const actor = await resolveTicketingActor(request);
 
-  if (!session?.user?.id) {
+  if (!actor?.userId) {
     // Rebuild authorize URL on the configured public base (avoids proxy host mismatches)
     const authorizeReturn = new URL('/api/oauth/authorize', base);
     for (const key of [

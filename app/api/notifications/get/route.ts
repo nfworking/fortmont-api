@@ -1,19 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export async function GET(req: Request) {
   try {
-    const session = await auth();
+    const actor = await resolveTicketingActor(req);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const userId = session.user.id;
+    const userId = actor.userId;
 
     const notifications = await prisma.notifications.findMany({
       where: { userId },

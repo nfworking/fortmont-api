@@ -1,17 +1,16 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { resolveTicketingActor } from '@/lib/ticketing-auth';
 import { hashClientSecret, generateRandomString } from '@/lib/oauth';
 import { prisma } from '@/lib/prisma';
 
-function isAdmin(session: { user?: { id?: string; role?: string } } | null | undefined) {
-  const user = session?.user;
-  return Boolean(user?.id && user.role === 'admin');
+function isAdmin(actor: { userId: string; userRole: string | null } | null) {
+  return Boolean(actor?.userId && actor.userRole === 'admin');
 }
 
-export async function GET() {
-  const session = await auth();
-  if (!isAdmin(session)) {
+export async function GET(request: Request) {
+  const actor = await resolveTicketingActor(request);
+  if (!isAdmin(actor)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -22,8 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!isAdmin(session)) {
+  const actor = await resolveTicketingActor(request);
+  if (!isAdmin(actor)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -46,8 +45,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await auth();
-  if (!isAdmin(session)) {
+  const actor = await resolveTicketingActor(request);
+  if (!isAdmin(actor)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

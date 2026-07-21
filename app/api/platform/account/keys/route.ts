@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   generatePlatformApiKeyMaterial,
   normalizePlatformScopes,
 } from "@/lib/platform-api";
 import { z } from "zod";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export const runtime = "nodejs";
 
@@ -15,15 +15,15 @@ const createKeySchema = z.object({
   expiresAt: z.string().datetime().optional().nullable(),
 });
 
-export async function GET() {
-  const session = await auth();
+export async function GET(request: Request) {
+  const actor = await resolveTicketingActor(request);
 
-  if (!session?.user?.id) {
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const keys = await prisma.platformApiKey.findMany({
-    where: { userId: session.user.id },
+    where: { userId: actor.userId },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -43,9 +43,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
+  const actor = await resolveTicketingActor(req);
 
-  if (!session?.user?.id) {
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
 
   const createdKey = await prisma.platformApiKey.create({
     data: {
-      userId: session.user.id,
+      userId: actor.userId,
       name: parsed.data.name,
       prefix: material.prefix,
       keyHash: material.keyHash,

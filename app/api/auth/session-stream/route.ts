@@ -1,18 +1,18 @@
 // app/api/auth/session-stream/route.ts
 import { NextRequest } from "next/server";
 import { createClient } from "redis";
-import { auth } from "@/lib/auth";
 import { sessionEventsChannel } from "@/lib/sessionEvents";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const actor = await resolveTicketingActor(req);
+  if (!actor?.userId) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const channel = sessionEventsChannel(session.user.id);
+  const channel = sessionEventsChannel(actor.userId);
   const redisUrl = process.env.REDIS_URL || "redis://172.20.0.25:6379";
 
   const subscriber = createClient({

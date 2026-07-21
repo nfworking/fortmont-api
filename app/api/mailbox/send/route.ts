@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/mailboxPassword";
 import nodemailer from "nodemailer";
 import { ImapFlow } from "imapflow"; // Import this to append the mail
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export async function POST(request: Request) {
   try {
-    // 1. Auth check
-    const session = await auth();
-    if (!session?.user?.id) {
+    const actor = await resolveTicketingActor(request);
+    if (!actor?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = session.user.id;
+    const userId = actor.userId;
 
     // 2. Parse request body
     const { to, subject, text, html } = await request.json();
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const senderHeader = `"${session.user.name || 'User'}" <${mailbox.email}>`;
+    const senderHeader = `"User" <${mailbox.email}>`;
 
     // 5. Send the email via SMTP
     const info = await transporter.sendMail({

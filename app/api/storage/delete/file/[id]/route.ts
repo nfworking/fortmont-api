@@ -3,9 +3,9 @@
 import { NextResponse } from "next/server";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { s3Client } from "@/lib/s3";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 const BUCKET_NAME = process.env.S3_BUCKET!;
 
@@ -14,9 +14,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const actor = await resolveTicketingActor(req);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -37,7 +37,7 @@ export async function DELETE(
     }
 
     // Owner check
-    if (file.ownerId !== session.user.id) {
+    if (file.ownerId !== actor.userId) {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }

@@ -3,13 +3,11 @@ import { hashPassword } from "@/lib/password";
 import { NextResponse } from "next/server";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "@/lib/s3";
-import {decode} from "next-auth/jwt"; // Added decode to read mobile tokens
-import { auth } from "@/lib/auth";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 const BUCKET_NAME = process.env.S3_BUCKET!;
 
 export const runtime = "nodejs";
-const AUTH_JWT_SALT = "authjs.session-token";
 
 function sanitizeAppUser(user: any) {
   if (!user) return user;
@@ -96,42 +94,9 @@ const userSelectFields = {
 
 export async function GET(req: Request) {
   try {
-    let authenticatedUserId: string | undefined;
+    const actor = await resolveTicketingActor(req);
 
-    // 1. TRY MOBILE AUTHENTICATION FIRST (Bearer Token)
-    const authHeader = req.headers.get("Authorization");
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      const authSecret = process.env.AUTH_SECRET;
-
-      if (authSecret) {
-        try {
-          const decoded: any = await decode({
-            token,
-            secret: authSecret,
-            salt: AUTH_JWT_SALT,
-          });
-
-          if (decoded && decoded.sub) {
-            authenticatedUserId = decoded.sub;
-          }
-        } catch (error) {
-          console.error("Failed to decode mobile token:", error);
-          return Response.json({ error: "Invalid mobile token" }, { status: 401 });
-        }
-      }
-    }
-
-    // 2. FALLBACK TO WEB AUTHENTICATION (Cookies via auth())
-    if (!authenticatedUserId) {
-      const session = await auth();
-      if (session?.user?.id) {
-        authenticatedUserId = session.user.id;
-      }
-    }
-
-    // 3. REJECT IF NEITHER AUTH METHOD PROVIDED A USER ID
-    if (!authenticatedUserId) {
+    if (!actor?.userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -149,7 +114,7 @@ export async function GET(req: Request) {
     } else {
       // Fetch the single authenticated user using our resolved token identity
       const user = await prisma.appUsers.findUnique({
-        where: { id: authenticatedUserId },
+        where: { id: actor.userId },
         select: userSelectFields,
       });
 
@@ -235,11 +200,11 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const actor = await resolveTicketingActor(req);
+    if (!actor?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = session.user.id;
+    const userId = actor.userId;
 
     // Fetch all files belonging to the user
     const userFiles = await prisma.file.findMany({
@@ -272,4 +237,4 @@ export async function DELETE(req: Request) {
     console.error("User deletion failed:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-}
+}

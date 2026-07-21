@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ notificationId: string }> }
 ) {
   try {
-    const session = await auth();
+    const actor = await resolveTicketingActor(request);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt } from "@/lib/mailboxPassword";
 import { ImapFlow } from "imapflow";
 import nodemailer from "nodemailer"
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export async function POST(req: Request) {
-  const session = await auth();
+  const actor = await resolveTicketingActor(req);
 
-  if (!session?.user?.id) {
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = session.user.id;
-  const name = session.user.name ?? `user-${userId}`;
+  const userId = actor.userId;
+  const name = `user-${userId}`;
   const { email, password } = await req.json();
 
   if (!email || !password) {

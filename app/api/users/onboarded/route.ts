@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    // 1. Get session
-    const session = await auth();
+    const actor = await resolveTicketingActor(request);
 
-    if (!session?.user?.id) {
+    if (!actor?.userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const userId = session.user.id;
+    const userId = actor.userId;
 
     // 2. Update user onboarding status
     await prisma.appUsers.update({

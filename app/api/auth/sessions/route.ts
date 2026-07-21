@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
+export async function GET(request: NextRequest) {
+  const actor = await resolveTicketingActor(request);
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const activeSessions = await prisma.userSession.findMany({
       where: {
-        userId: session.user.id,
+        userId: actor.userId,
         expiresAt: { gt: new Date() },
       },
       orderBy: { lastActive: "desc" },
@@ -35,8 +35,8 @@ export async function GET() {
 }
 
 export async function DELETE(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const actor = await resolveTicketingActor(request);
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -46,14 +46,14 @@ export async function DELETE(request: NextRequest) {
     const revokeOthers = searchParams.get("revokeOthers") === "true";
 
     if (revokeOthers) {
-      const currentSessionToken = (session.user as any).sessionId;
+      const currentSessionToken = request.cookies.get("authjs.session-token")?.value;
       if (!currentSessionToken) {
         return NextResponse.json({ error: "No active session ID found" }, { status: 400 });
       }
 
       await prisma.userSession.deleteMany({
         where: {
-          userId: session.user.id,
+          userId: actor.userId,
           NOT: { sessionToken: currentSessionToken },
         },
       });
@@ -70,7 +70,7 @@ export async function DELETE(request: NextRequest) {
       where: { sessionToken: sessionId },
     });
 
-    if (!sessionRecord || sessionRecord.userId !== session.user.id) {
+    if (!sessionRecord || sessionRecord.userId !== actor.userId) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 

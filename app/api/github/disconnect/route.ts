@@ -2,18 +2,18 @@
 // Deletes the GitHubLink record, effectively unlinking the account.
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
-export async function DELETE() {
-  const session = await auth();
+export async function DELETE(request: Request) {
+  const actor = await resolveTicketingActor(request);
 
-  if (!session?.user?.id) {
+  if (!actor?.userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const existing = await prisma.gitHubLink.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: actor.userId },
   });
 
   if (!existing) {
@@ -24,7 +24,7 @@ export async function DELETE() {
   }
 
   await prisma.gitHubLink.delete({
-    where: { userId: session.user.id },
+    where: { userId: actor.userId },
   });
 
   return NextResponse.json({ success: true, message: "GitHub account unlinked" });

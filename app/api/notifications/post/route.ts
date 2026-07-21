@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { resolveTicketingActor } from "@/lib/ticketing-auth";
 
 export async function POST(
   req: Request,
@@ -8,9 +8,9 @@ export async function POST(
 ) {
 
   try {
-      const session = await auth();
+      const actor = await resolveTicketingActor(req);
   
-      if (!session?.user?.id) {
+      if (!actor?.userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
@@ -20,7 +20,7 @@ export async function POST(
   // optional safety check (highly recommended)
   
   const user = await prisma.appUsers.findUnique({
-    where: { id: session.user.id },
+    where: { id: actor.userId },
   });
 
   if (!user) {
