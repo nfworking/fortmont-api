@@ -193,6 +193,7 @@ export default function MailClient() {
         setActiveTab={setActiveTab}
         setSearchQuery={setSearchQuery}
         setSelectedEmail={setSelectedEmail}
+        onRefresh={() => fetchEmails(activeFolder)}
       />
 
       <ReadingPane

@@ -1,4 +1,5 @@
 "use client"
+import { RefreshCw } from "lucide-react"
 
 import * as React from "react"
 import { Email, FolderType } from "./mail"
@@ -9,15 +10,16 @@ import { Badge } from "@/components/ui/badge"
 import { Inbox, Loader2 } from "lucide-react"
 
 interface EmailListProps {
-  activeFolder: FolderType
-  emailsLoading: boolean
-  filteredEmails: Email[]
-  selectedEmail: Email | null
-  searchQuery: string
-  activeTab: "all" | "unread"
-  setActiveTab: (tab: "all" | "unread") => void
-  setSearchQuery: (query: string) => void
-  setSelectedEmail: (email: Email) => void
+  activeFolder: FolderType;
+  emailsLoading: boolean;
+  filteredEmails: Email[];
+  selectedEmail: Email | null;
+  searchQuery: string;
+  activeTab: "all" | "unread";
+  setActiveTab: (tab: "all" | "unread") => void;
+  setSearchQuery: (query: string) => void;
+  setSelectedEmail: (email: Email) => void;
+  onRefresh: () => void;
 }
 
 export function EmailList({
@@ -67,6 +69,13 @@ export function EmailList({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-8 text-xs bg-muted/20 hover:bg-muted/40 border-border/60 focus-visible:bg-background focus-visible:ring-2"
           />
+          <button
+            onClick={onRefresh}
+            className="ml-2 p-1 rounded-full hover:bg-muted/30"
+            aria-label="Refresh Inbox"
+          >
+            <RefreshCw className="size-3.5 text-muted-foreground" />
+          </button>
         </div>
       </div>
 

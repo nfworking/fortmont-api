@@ -53,6 +53,9 @@ model AppUsers {
   files               File[]
   storage             UserStorage?
   fileActivities      FileActivity[]
+  // OAuth relations
+  oauthCodes          OAuthCode[]
+  oauthTokens         OAuthToken[]
   pendingUploads      PendingUpload[]
   oneTimePassword     OneTimePassword?
 }
@@ -344,3 +347,48 @@ model OneTimePassword {
   @@index([userId])
   @@map("one_time_passwords")
 }
+
+// OAuth2 / OpenID Connect models
+model OAuthClient {
+  id           String   @id @default(cuid())
+  clientId     String   @unique
+  clientSecret String   // bcrypt hash
+  name         String
+  redirectUris Json // exact URIs allowed (stored as JSON array)
+  scopes Json // default scopes (stored as JSON array)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  codes        OAuthCode[]
+  tokens       OAuthToken[]
+}
+
+model OAuthCode {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  clientId      String
+  client        OAuthClient @relation(fields: [clientId], references: [id])
+  userId        String
+  user          AppUsers @relation(fields: [userId], references: [id])
+  redirectUri   String
+  codeChallenge String? // PKCE S256 challenge
+  expiresAt     DateTime
+  used          Boolean  @default(false)
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
+}
+
+model OAuthToken {
+  id        String   @id @default(cuid())
+  token     String   @unique // JWT for access, opaque for refresh
+  clientId  String
+  client    OAuthClient @relation(fields: [clientId], references: [id])
+  userId    String
+  user      AppUsers @relation(fields: [userId], references: [id])
+  type      TokenType @default(ACCESS)
+  scopes    Json
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+}
