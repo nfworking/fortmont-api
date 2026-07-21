@@ -56,3 +56,4 @@ export declare function generateCodeVerifier(length?: number): string;
 export declare function generateCodeChallenge(verifier: string): Promise<string>;
 export declare function createPkcePair(length?: number): Promise<PkcePair>;
 export declare function createAuthorizationUrlFromDiscovery(discovery: FortmontDiscoveryDocument, clientId: string, redirectUri: string, scopes?: string[], state?: string, codeChallenge?: string, nonce?: string): string;
+//# sourceMappingURL=index.d.ts.map

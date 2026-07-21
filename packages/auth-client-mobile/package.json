@@ -1,0 +1,27 @@
+{
+  "name": "@fortmont/auth-client-mobile",
+  "version": "1.0.0",
+  "description": "React Native helpers for signing into Fortmont as an OpenID Connect identity provider",
+  "main": "dist/index.js",
+  "react-native": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "author": "nfworking",
+  "license": "MIT",
+  "dependencies": {
+    "@noble/hashes": "^1.8.0",
+    "base-64": "^1.0.0",
+    "react-native-get-random-values": "^1.11.0",
+    "react-native-url-polyfill": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,3 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDiscoveryUrl = getDiscoveryUrl;
+exports.getAuthorizationUrl = getAuthorizationUrl;
+exports.buildAuthUrl = buildAuthUrl;
+exports.getTokenUrl = getTokenUrl;
+exports.getUserInfoUrl = getUserInfoUrl;
+exports.getDiscoveryDocument = getDiscoveryDocument;
+exports.exchangeCode = exchangeCode;
+exports.fetchUserInfo = fetchUserInfo;
+exports.generateState = generateState;
+exports.generateCodeVerifier = generateCodeVerifier;
+exports.generateCodeChallenge = generateCodeChallenge;
+exports.createPkcePair = createPkcePair;
+exports.createAuthorizationUrlFromDiscovery = createAuthorizationUrlFromDiscovery;
 function normalizeIssuer(value) {
     const trimmed = value.trim();
     if (!trimmed) {
@@ -11,10 +26,10 @@ function resolveIssuer(configOrIssuer) {
     }
     return normalizeIssuer(configOrIssuer.issuer ?? configOrIssuer.authBaseUrl ?? '');
 }
-export function getDiscoveryUrl(issuer) {
+function getDiscoveryUrl(issuer) {
     return `${normalizeIssuer(issuer)}/.well-known/openid-configuration`;
 }
-export function getAuthorizationUrl(config, state, codeChallenge) {
+function getAuthorizationUrl(config, state, codeChallenge) {
     const issuer = resolveIssuer(config);
     const params = new URLSearchParams({
         response_type: 'code',
@@ -30,16 +45,16 @@ export function getAuthorizationUrl(config, state, codeChallenge) {
     }
     return `${issuer}/api/oauth/authorize?${params.toString()}`;
 }
-export function buildAuthUrl(config, state, codeChallenge) {
+function buildAuthUrl(config, state, codeChallenge) {
     return getAuthorizationUrl(config, state, codeChallenge);
 }
-export function getTokenUrl(configOrIssuer) {
+function getTokenUrl(configOrIssuer) {
     return `${resolveIssuer(configOrIssuer)}/api/oauth/token`;
 }
-export function getUserInfoUrl(configOrIssuer) {
+function getUserInfoUrl(configOrIssuer) {
     return `${resolveIssuer(configOrIssuer)}/api/oauth/userinfo`;
 }
-export async function getDiscoveryDocument(configOrIssuer) {
+async function getDiscoveryDocument(configOrIssuer) {
     const response = await fetch(getDiscoveryUrl(resolveIssuer(configOrIssuer)), {
         headers: { Accept: 'application/json' },
     });
@@ -52,7 +67,7 @@ async function readResponseBody(response) {
     const text = await response.text();
     return text || response.statusText || 'Unknown error';
 }
-export async function exchangeCode(config, code, codeVerifier) {
+async function exchangeCode(config, code, codeVerifier) {
     const body = new URLSearchParams({
         grant_type: 'authorization_code',
         code,
@@ -73,7 +88,7 @@ export async function exchangeCode(config, code, codeVerifier) {
     }
     return response.json();
 }
-export async function fetchUserInfo(accessToken, userInfoEndpointOrIssuer) {
+async function fetchUserInfo(accessToken, userInfoEndpointOrIssuer) {
     const userInfoUrl = userInfoEndpointOrIssuer.includes('/api/oauth/userinfo')
         ? userInfoEndpointOrIssuer
         : getUserInfoUrl(userInfoEndpointOrIssuer);
@@ -97,25 +112,25 @@ function randomBytes(length = 32) {
     crypto.getRandomValues(bytes);
     return bytes;
 }
-export function generateState(length = 16) {
+function generateState(length = 16) {
     return base64UrlEncode(randomBytes(length));
 }
-export function generateCodeVerifier(length = 64) {
+function generateCodeVerifier(length = 64) {
     return base64UrlEncode(randomBytes(length));
 }
-export async function generateCodeChallenge(verifier) {
+async function generateCodeChallenge(verifier) {
     const encoded = new TextEncoder().encode(verifier);
     const digest = await crypto.subtle.digest('SHA-256', encoded);
     return base64UrlEncode(new Uint8Array(digest));
 }
-export async function createPkcePair(length = 64) {
+async function createPkcePair(length = 64) {
     const verifier = generateCodeVerifier(length);
     return {
         verifier,
         challenge: await generateCodeChallenge(verifier),
     };
 }
-export function createAuthorizationUrlFromDiscovery(discovery, clientId, redirectUri, scopes, state, codeChallenge, nonce) {
+function createAuthorizationUrlFromDiscovery(discovery, clientId, redirectUri, scopes, state, codeChallenge, nonce) {
     const params = new URLSearchParams({
         response_type: 'code',
         client_id: clientId,
@@ -132,3 +147,4 @@ export function createAuthorizationUrlFromDiscovery(discovery, clientId, redirec
         params.set('nonce', nonce);
     return `${discovery.authorization_endpoint}?${params.toString()}`;
 }
+//# sourceMappingURL=index.js.map
