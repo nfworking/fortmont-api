@@ -70,7 +70,7 @@ export function EmailList({
             className="pl-8 h-8 text-xs bg-muted/20 hover:bg-muted/40 border-border/60 focus-visible:bg-background focus-visible:ring-2"
           />
           <button
-            onClick={onRefresh}
+            
             className="ml-2 p-1 rounded-full hover:bg-muted/30"
             aria-label="Refresh Inbox"
           >

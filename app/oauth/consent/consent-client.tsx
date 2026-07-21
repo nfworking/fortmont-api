@@ -85,6 +85,21 @@ export default function OAuthConsentPage() {
     );
   }
 
+  // Auto-approve if the user has already granted the requested scopes
+  const alreadyApproved = (() => {
+    const granted = clientInfo.scopes;
+    const requested = scope.split(/\\s+/).filter(Boolean);
+    if (requested.length === 0) return true; // no new scopes
+    return requested.every((s) => granted.includes(s));
+  })();
+
+  useEffect(() => {
+    if (alreadyApproved && redirectUri) {
+      // Immediately redirect with consent=approved
+      window.location.href = buildAuthorizeUrl('approved');
+    }
+  }, [alreadyApproved, redirectUri]);
+
   const requestedScopes = scope.split(/\s+/).filter(Boolean);
 
   return (
