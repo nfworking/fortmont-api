@@ -16,12 +16,33 @@ let rsaPublicJwk: Record<string, unknown> | null = null;
 let rsaPrivateKey: CryptoKey | null = null;
 let rsaPublicKey: CryptoKey | null = null;
 
-export function getOAuthBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+function getRequestOrigin(request?: Request): string | null {
+  if (!request) return null;
+
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+
+  if (forwardedHost && forwardedProto) {
+    return `${forwardedProto}://${forwardedHost}`.replace(/\/$/, '');
+  }
+
+  try {
+    return new URL(request.url).origin.replace(/\/$/, '');
+  } catch {
+    return null;
+  }
 }
 
-export function getIssuer(): string {
-  return getOAuthBaseUrl();
+export function getOAuthBaseUrl(request?: Request): string {
+  return (
+    getRequestOrigin(request) ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    'http://localhost:3000'
+  ).replace(/\/$/, '');
+}
+
+export function getIssuer(request?: Request): string {
+  return getOAuthBaseUrl(request);
 }
 
 async function loadKeyPairFromEnv(pem: string) {
@@ -69,11 +90,15 @@ export async function getPublicKey(): Promise<CryptoKey> {
   return key;
 }
 
-export async function signAccessToken(payload: JWTPayload, expiresIn: string = '1h') {
+export async function signAccessToken(
+  payload: JWTPayload,
+  expiresIn: string = '1h',
+  issuer?: string,
+) {
   const { rsaPrivateKey: key } = await getKeyPair();
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'RS256', kid: KID })
-    .setIssuer(getIssuer())
+    .setIssuer(issuer || getIssuer())
     .setIssuedAt()
     .setExpirationTime(expiresIn)
     .sign(key);
@@ -83,20 +108,21 @@ export async function signIdToken(
   payload: JWTPayload,
   audience: string,
   expiresIn: string = '1h',
+  issuer?: string,
 ) {
   const { rsaPrivateKey: key } = await getKeyPair();
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'RS256', kid: KID })
-    .setIssuer(getIssuer())
+    .setIssuer(issuer || getIssuer())
     .setAudience(audience)
     .setIssuedAt()
     .setExpirationTime(expiresIn)
     .sign(key);
 }
 
-export async function verifyAccessToken(token: string) {
+export async function verifyAccessToken(token: string, issuer?: string) {
   const publicKey = await getPublicKey();
-  return jwtVerify(token, publicKey, { issuer: getIssuer() });
+  return jwtVerify(token, publicKey, { issuer: issuer || getIssuer() });
 }
 
 export async function getJWKS() {
@@ -162,8 +188,8 @@ export function verifyPkceS256(codeVerifier: string, codeChallenge: string): boo
   return hash === codeChallenge;
 }
 
-export function getOpenIdConfiguration() {
-  const base = getOAuthBaseUrl();
+export function getOpenIdConfiguration(request?: Request) {
+  const base = getOAuthBaseUrl(request);
   return {
     issuer: base,
     authorization_endpoint: `${base}/api/oauth/authorize`,
@@ -177,6 +203,6 @@ export function getOpenIdConfiguration() {
     token_endpoint_auth_methods_supported: ['client_secret_post', 'none'],
     code_challenge_methods_supported: ['S256'],
     grant_types_supported: ['authorization_code', 'refresh_token'],
-    claims_supported: ['sub', 'name', 'email', 'picture'],
+    claims_supported: ['sub', 'iss', 'aud', 'exp', 'iat', 'nonce', 'name', 'email', 'picture'],
   };
 }

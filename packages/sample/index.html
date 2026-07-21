@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fortmont OAuth Sample</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="eyebrow">Identity Provider Test Harness</div>
+        <h1>Sign in with Fortmont</h1>
+        <p>
+          This sample app drives the authorization code + PKCE flow against Fortmont as an OpenID
+          Connect provider, then exchanges the code and shows the returned claims.
+        </p>
+      </section>
+
+      <section class="panel">
+        <label>
+          Issuer URL
+          <input id="issuer" type="url" value="https://api.fortmont.me" />
+        </label>
+        <label>
+          Client ID
+          <input id="clientId" type="text" placeholder="4615a7c5-c3ae-487a-8e42-3644947a4f49" />
+        </label>
+        <label>
+          Client Secret (optional)
+          <input id="clientSecret" type="password" placeholder="Only needed for confidential clients" />
+        </label>
+        <label>
+          Redirect URI
+          <input id="redirectUri" type="url" value="http://localhost:4173/" />
+        </label>
+        <label>
+          Scopes
+          <input id="scopes" type="text" value="openid profile email" />
+        </label>
+
+        <div class="actions">
+          <button id="signIn">Sign in with Fortmont</button>
+          <button id="clear" class="secondary">Clear session</button>
+        </div>
+      </section>
+
+      <section class="panel split">
+        <div>
+          <h2>State</h2>
+          <pre id="state">Ready</pre>
+        </div>
+        <div>
+          <h2>Tokens / Claims</h2>
+          <pre id="output">No sign-in yet.</pre>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

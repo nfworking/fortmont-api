@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const tokenUrl = `${getOAuthBaseUrl()}/api/oauth/token`;
+  const tokenUrl = `${getOAuthBaseUrl(request)}/api/oauth/token`;
 
   const body = new URLSearchParams({
     grant_type: 'authorization_code',

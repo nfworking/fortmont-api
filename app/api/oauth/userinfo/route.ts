@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { scopesInclude, verifyAccessToken } from '@/lib/oauth';
+import { getOAuthBaseUrl, scopesInclude, verifyAccessToken } from '@/lib/oauth';
 import { prisma } from '@/lib/prisma';
 
 function scopesFromPayload(scope: unknown): string[] {
@@ -13,7 +13,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { payload } = await verifyAccessToken(authHeader.slice(7));
+    const issuer = getOAuthBaseUrl(request);
+    const { payload } = await verifyAccessToken(authHeader.slice(7), issuer);
     const userId = payload.sub;
     if (typeof userId !== 'string') {
       return NextResponse.json({ error: 'invalid_token' }, { status: 401 });

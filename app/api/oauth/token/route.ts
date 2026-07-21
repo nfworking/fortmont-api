@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { addMinutes } from 'date-fns';
 import {
   generateRandomString,
+  getOAuthBaseUrl,
   scopesFromJson,
   scopesInclude,
   signAccessToken,
@@ -11,13 +12,16 @@ import {
 } from '@/lib/oauth';
 import { prisma } from '@/lib/prisma';
 
-async function buildIdTokenClaims(userId: string, scopes: string[]) {
+async function buildIdTokenClaims(userId: string, scopes: string[], nonce?: string | null) {
   const user = await prisma.appUsers.findUnique({
     where: { id: userId },
     select: { email: true, displayName: true, username: true, avatarUrl: true },
   });
 
   const claims: Record<string, unknown> = { sub: userId };
+  if (nonce) {
+    claims.nonce = nonce;
+  }
   if (scopesInclude(scopes, 'email') && user?.email) {
     claims.email = user.email;
   }
@@ -128,6 +132,7 @@ export async function POST(request: Request) {
   const codeVerifier = form.get('code_verifier') as string | null;
 
   const cors = corsHeaders(request);
+  const issuer = getOAuthBaseUrl(request);
 
   if (!clientId) {
     return NextResponse.json({ error: 'invalid_client' }, { status: 400, headers: cors });
@@ -181,6 +186,7 @@ export async function POST(request: Request) {
     const accessToken = await signAccessToken(
       { sub: authCode.userId, aud: client.clientId, scope: scopeString },
       '1h',
+      issuer,
     );
 
     let refreshTokenValue: string | undefined;
@@ -206,8 +212,8 @@ export async function POST(request: Request) {
     };
 
     if (scopesInclude(scopes, 'openid')) {
-      const idTokenClaims = await buildIdTokenClaims(authCode.userId, scopes);
-      resp.id_token = await signIdToken(idTokenClaims, client.clientId, '1h');
+      const idTokenClaims = await buildIdTokenClaims(authCode.userId, scopes, authCode.nonce);
+      resp.id_token = await signIdToken(idTokenClaims, client.clientId, '1h', issuer);
     }
 
     if (refreshTokenValue) resp.refresh_token = refreshTokenValue;
@@ -251,6 +257,7 @@ export async function POST(request: Request) {
     const accessToken = await signAccessToken(
       { sub: stored.userId, aud: client.clientId, scope: scopeString },
       '1h',
+      issuer,
     );
 
     const resp: Record<string, unknown> = {
@@ -262,7 +269,7 @@ export async function POST(request: Request) {
 
     if (scopesInclude(scopes, 'openid')) {
       const idTokenClaims = await buildIdTokenClaims(stored.userId, scopes);
-      resp.id_token = await signIdToken(idTokenClaims, client.clientId, '1h');
+      resp.id_token = await signIdToken(idTokenClaims, client.clientId, '1h', issuer);
     }
 
     return NextResponse.json(resp, { headers: cors });

@@ -18,6 +18,7 @@ type ConsentBody = {
   state?: string;
   code_challenge?: string;
   code_challenge_method?: string;
+  nonce?: string;
 };
 
 /**
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
       state: (form.get('state') as string) || undefined,
       code_challenge: (form.get('code_challenge') as string) || undefined,
       code_challenge_method: (form.get('code_challenge_method') as string) || undefined,
+      nonce: (form.get('nonce') as string) || undefined,
     };
   }
 
@@ -56,6 +58,7 @@ export async function POST(request: Request) {
     state,
     code_challenge: codeChallenge,
     code_challenge_method: codeChallengeMethod,
+    nonce,
   } = body;
 
   if (!clientId || !redirectUri) {
@@ -140,6 +143,7 @@ export async function POST(request: Request) {
       redirectUri,
       scopes: grantedScopes,
       codeChallenge: codeChallenge || undefined,
+      nonce: nonce || undefined,
       expiresAt: addMinutes(new Date(), 5),
     },
   });

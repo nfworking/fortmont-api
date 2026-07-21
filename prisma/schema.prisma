@@ -372,6 +372,7 @@ model OAuthCode {
   redirectUri   String
   scopes        Json
   codeChallenge String? // PKCE S256 challenge
+  nonce         String?
   expiresAt     DateTime
   used          Boolean  @default(false)
 }
@@ -392,4 +393,4 @@ model OAuthToken {
   scopes    Json
   expiresAt DateTime
   revoked   Boolean  @default(false)
-}
+}

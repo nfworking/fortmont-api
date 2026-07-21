@@ -15,7 +15,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const base = getOAuthBaseUrl();
+  const base = getOAuthBaseUrl(request);
 
   const clientId = url.searchParams.get('client_id');
   const redirectUri = url.searchParams.get('redirect_uri');
