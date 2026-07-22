@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils"
-import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -20,22 +19,9 @@ type LoginFormProps = React.ComponentProps<"form"> & {
   callbackUrl: string;
 };
 
-const loadingSteps = [
-  { title: "Securing Session",  sub: "Verifying your credentials..."       },
-  { title: "Loading Workspace", sub: "Connecting to Active Directory..."    },
-  { title: "Syncing Policies",  sub: "Fetching Entra ID configuration..."  },
-  { title: "Almost Ready",      sub: "Preparing your Fortmont dashboard..." },
-];
-
-
-
-const logoColors = ["#534AB7", "#1D9E75", "#378ADD", "#D85A30"];
-
 export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) {
   const [isLoading, setIsLoading]     = useState(false);
   const [isLoading2, setIsLoading2]   = useState(false);
-  const [isSplashing, setIsSplashing] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -44,10 +30,6 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
   const [maskedEmail, setMaskedEmail] = useState<string | null>(null);
   const [error, setError]       = useState<string | null>(null);
   const router = useRouter();
-
-  const cycleStep = (index: number) => {
-    setLoadingStep(index);
-  };
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -97,20 +79,11 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
         setIsLoading(false);
         return;
       }
-
-      setIsSplashing(true);
-
-      // Spread 3 transitions evenly across 12 seconds
-      setTimeout(() => cycleStep(1), 3000);
-      setTimeout(() => cycleStep(2), 6500);
-      setTimeout(() => cycleStep(3), 9500);
-
-      await new Promise((resolve) => setTimeout(resolve, 12000));
       router.push(result?.url ?? "/dashboard");
+      router.refresh();
     } catch {
       setError("An unexpected error occurred.");
       setIsLoading(false);
-      setIsSplashing(false);
     }
   };
 
@@ -146,12 +119,6 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
   };
 
   const handleEntraLogin = async () => {
-    setIsSplashing(true);
-    setTimeout(() => cycleStep(1), 3000);
-    setTimeout(() => cycleStep(2), 6500);
-    setTimeout(() => cycleStep(3), 9500);
-
-  await new Promise((resolve) => setTimeout(resolve, 12000));
     try {
       setIsLoading2(true);
       setError(null);
@@ -160,88 +127,6 @@ export function LoginForm({ className, callbackUrl, ...props }: LoginFormProps) 
       setIsLoading2(false);
     }
   };
-
-  // --- SPLASH SCREEN ---
-  if (isSplashing) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950 select-none">
-        <div className="relative z-10 flex flex-col items-center gap-6 text-center max-w-xs w-full px-6">
-          
-          {/* Elegant Circular Spinner & Logo */}
-          <div className="relative flex items-center justify-center w-16 h-16">
-            {/* Minimalist Spinner Ring */}
-            <svg className="animate-spin w-16 h-16 text-zinc-800" viewBox="0 0 50 50">
-              <circle
-                cx="25"
-                cy="25"
-                r="21"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                className="opacity-20"
-              />
-              <path
-                d="M 25 4 A 21 21 0 0 1 46 25"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                fill="none"
-                className="text-zinc-400 opacity-80"
-              />
-            </svg>
-            
-            {/* Static Minimalist Brand Logo in Center */}
-            <div className="absolute grid grid-cols-2 gap-1">
-              {logoColors.map((c, i) => (
-                <div
-                  key={i}
-                  className="w-2.5 h-2.5 rounded-[2px]"
-                  style={{ background: c }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Branding Subtitle */}
-          <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-600 font-medium -mt-2">
-            Fortmont
-          </span>
-
-          {/* Cycling text with premium slide/fade/blur animations */}
-          <div className="h-14 flex items-center justify-center w-full">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={loadingStep}
-                initial={{ opacity: 0, y: 6, filter: "blur(3px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -6, filter: "blur(3px)" }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="space-y-1"
-              >
-                <h2 className="text-sm font-medium text-zinc-200">
-                  {loadingSteps[loadingStep].title}
-                </h2>
-                <p className="text-xs text-zinc-500">
-                  {loadingSteps[loadingStep].sub}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Minimalist Thin Progress Bar */}
-          <div className="w-full h-[2px] bg-zinc-900 rounded-full overflow-hidden mt-2">
-            <motion.div
-              className="h-full bg-zinc-300 rounded-full"
-              initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 12, ease: "easeInOut" }}
-            />
-          </div>
-          
-        </div>
-      </div>
-    );
-  }
 
   // --- LOGIN FORM ---
   return (

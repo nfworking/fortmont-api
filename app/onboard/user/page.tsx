@@ -12,12 +12,32 @@ export default async function OnboardingPage() {
 
   const user = await prisma.appUsers.findUnique({
     where: { id: session.user.id },
-    select: { onboarded: true },
+    select: {
+      onboarded: true,
+      displayName: true,
+      username: true,
+      email: true,
+      role: true,
+      avatarUrl: true,
+      phone: true,
+    },
   });
 
-  if (user?.onboarded) {
-    redirect("/dashboard"); // or wherever they should go
+  if (user?.onboarded === true) {
+    redirect("/dashboard");
   }
 
-  return <OnboardingFlow />;
+  const email = user?.email ?? session.user.email ?? "";
+
+  return (
+    <OnboardingFlow
+      initialData={{
+        displayName: user?.displayName ?? session.user.name ?? user?.username ?? "",
+        avatarUrl: user?.avatarUrl ?? session.user.image ?? null,
+        role: user?.role ?? "",
+        mailboxAlias: email.includes("@") ? email.split("@")[0] : user?.username ?? "",
+        mailboxDomain: email.includes("@") ? email.split("@")[1] : undefined,
+      }}
+    />
+  );
 }
