@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const scopes = scopesFromPayload(payload.scope);
     const user = await prisma.appUsers.findUnique({
       where: { id: actor.userId },
-      select: { email: true, displayName: true, username: true, avatarUrl: true },
+      select: { email: true, displayName: true, username: true, avatarUrl: true, role: true },
     });
 
     const claims: Record<string, unknown> = { sub: actor.userId };
@@ -34,6 +34,9 @@ export async function GET(request: Request) {
     if (scopesInclude(scopes, 'profile')) {
       claims.name = user?.displayName ?? user?.username ?? undefined;
       if (user?.avatarUrl) claims.picture = user.avatarUrl;
+    }
+    if (user?.role) {
+      claims.role = user.role;
     }
 
     return NextResponse.json(claims);
